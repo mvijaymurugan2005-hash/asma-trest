@@ -1,0 +1,31 @@
+{# Admin login #}
+<!DOCTYPE html>
+<html data-theme="light" style="color-scheme:light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='style.css',v=CSS_V) }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='admin.css',v=CSS_V) }}">
+  </head>
+  <body style="background:linear-gradient(110deg,#072a68,#1c58b8)">
+    <form method="post" class="lg">
+      <input type="hidden" name="_csrf" value="{{ csrf() }}">
+      <h2 style="color:#0b3a8c;margin:0">🔒 Admin Login</h2>
+      <p class="note">{{ S.trust_name }}</p>
+      {% for c,m in get_flashed_messages(with_categories=true) %}
+        <div class="flash {{ c }}" style="margin:0">{{ m }}</div>
+      {% endfor %}
+      <label>Username</label>
+      <input name="username" required autofocus autocomplete="username">
+      <label>Password</label>
+      <input name="password"
+             type="password"
+             required
+             autocomplete="current-password">
+      <button class="btn gold" style="width:100%;margin-top:16px">Login</button>
+      <p><a href="/">← Back to website</a></p>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{# Donation receipt / payment status page #}
+{% from '_m.html' import head, tracker with context %}
+{% block title %}
+  Donation Status – {{ S.trust_name }}
+{% endblock %}
+{% block hdr_left %}
+  {% if d.status=="paid" %}
+    {# donor menu: a ☰ button at the LEFT of the ASMA logo, shown once the Trust has verified the payment #}
+    <div class="dmenu hdrmenu" id="dmenu" role="navigation" aria-label="Donor menu">
+      <button type="button"
+              class="dm-toggle"
+              id="dmt"
+              aria-label="Menu"
+              aria-expanded="false"
+              aria-controls="dml">
+        <span class="dm-ico" aria-hidden="true">☰</span>
+      </button>
+      <div class="dm-list" id="dml" role="menu">
+        <a role="menuitem" href="{{ url_for('home') }}">🏠 Home</a>
+        <a role="menuitem" href="{{ url_for('contact') }}">☎ Contact</a>
+        <a role="menuitem" href="#address" data-panel="address">📍 Address</a>
+        <a role="menuitem" href="#certification" data-panel="certification">🎓 Certification</a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+{% block body %}
+  {{ head("Donation Status") }}
+  <div class="wrap page">
+    <div class="form card okc">
+      {% if d.status=="paid" %}
+        {% if d.mode=="test" %}
+          <div class="flash err"
+               style="margin:0 0 14px">TEST MODE – this was a simulated payment. The receipt is marked TEST and is not valid.</div>
+        {% endif %}
+        <div class="big">✅</div>
+        <h2 class="ok-t" style="text-align:center">PAYMENT SUCCESSFUL!</h2>
+        <p style="text-align:center;font-size:18px">Thank you for supporting {{ S.trust_name }}.</p>
+        {{ tracker(d, c) }}
+        {% if c %}
+          <div class="btnrow center" style="margin:6px 0 4px">
+            <a class="btn gold" href="{{ url_for('cert_pdf',num=c.number,dl=1) }}">⬇ DOWNLOAD DONATION CERTIFICATE</a>
+          </div>
+        {% else %}
+          <p class="trk-live" id="trkLive">⏳ Your certificate is being prepared – it will appear here in a moment.</p>
+        {% endif %}
+        <div class="sum">
+          <div><span>Donor</span><b>{{ d.name }}</b></div>
+          <div><span>Amount</span><b>₹{{ d.amount|inr }}</b></div>
+          {% if c %}
+            <div><span>Receipt No.</span><b>{{ c.number }}</b></div>
+          {% endif %}
+          <div><span>{{'UTR / Transaction ID' if d.channel=='upi_qr' else 'Transaction ID'}}</span><b>{{ d.payment_id or '-' }}</b></div>
+          <div><span>Reference</span><b>{{ d.ref }}</b></div>
+          <div><span>Payment date</span><b>{{ d.paid_at or d.created }}</b></div>
+        </div>
+        <section class="dpanel" id="address" hidden>
+          <h3>📍 Address</h3>
+          <p><b>{{ S.trust_name }}</b><br>{{ S.address }}</p>
+          <p>☎ {{ S.phone }}<br>✉ {{ S.email }}</p>
+          <div class="btnrow">
+            <a class="btn gold"
+               target="_blank"
+               rel="noopener"
+               href="https://www.google.com/maps/dir/?api=1&destination=12.2493382,79.0713247">➤ Get Directions</a>
+            <a class="btn blue" href="{{ url_for('contact') }}">Contact Us</a>
+          </div>
+        </section>
+
+        <section class="dpanel" id="certification" hidden>
+          <h3>🎓 Certification</h3>
+          {% if c %}
+            <p class="note" style="margin-top:0">Receipt No. <b>{{ c.number }}</b></p>
+            <div class="btnrow">
+              <a class="btn gold" href="{{ url_for('cert_pdf',num=c.number,dl=1) }}">⬇ DOWNLOAD DONATION CERTIFICATE</a>
+              <a class="btn blue" href="{{ url_for('g80_status',ref=d.ref) }}">CHECK 80G CERTIFICATE STATUS</a>
+            </div>
+          {% else %}
+            <p style="margin:0 0 12px">Your certificate is being prepared. This page will update by itself in a moment.</p>
+            <div class="btnrow"><a class="btn blue" href="{{ url_for('receipt',ref=d.ref) }}">↻ Refresh</a></div>
+          {% endif %}
+        </section>
+
+        {% if c %}
+          <p class="note" style="text-align:center">
+            {% if c.emailed %}
+              A copy of the receipt was emailed to {{ d.email }}.
+            {% else %}
+              A copy will be emailed to {{ d.email }} when email is configured.
+            {% endif %}
+            This is a donation receipt, not the official Form 10BE (80G) certificate. <a href="{{ url_for('verify',num=c.number) }}">Verify receipt</a>
+          </p>
+        {% endif %}
+      {% elif d.status=="pending" %}
+        {% if d.mode=="test" %}
+          <div class="flash err" style="margin:0 0 14px">TEST MODE – this donation is marked TEST and will never be valid for a real receipt or 80G.</div>
+        {% endif %}
+        <div class="big">⏳</div>
+        <h2 style="text-align:center">PAYMENT VERIFICATION PENDING</h2>
+        <p style="text-align:center;font-size:18px">Your payment details have been submitted. Your receipt will be available after successful verification.</p>
+        {{ tracker(d, c) }}
+        <p class="trk-live" id="trkLive">⏳ Checking status automatically…</p>
+        <div class="sum">
+          <div><span>Donor</span><b>{{ d.name }}</b></div>
+          <div><span>Amount</span><b>₹{{ d.amount|inr }}</b></div>
+          <div><span>UTR submitted</span><b>{{ d.utr }}</b></div>
+          <div><span>Reference</span><b>{{ d.ref }}</b></div>
+        </div>
+        <p class="note" style="text-align:center">The Trust checks every UPI payment against its bank account. Please keep this reference number and open this page again later (or watch your email at {{ d.email }}). Verification can take some time.</p>
+        <p class="note" style="text-align:center">
+          ⏳ This page checks the status automatically – you do not need to refresh.
+          When the Trust verifies your payment, your certificate and the Download button appear here.
+        </p>
+        <p class="acts"><a class="btn blue" href="{{ url_for('receipt',ref=d.ref) }}">↻ Check status</a></p>
+      {% elif d.status=="created" and d.channel=="upi_qr" %}
+        <div class="big">🕒</div>
+        <h2 style="text-align:center">Payment details not submitted yet</h2>
+        {{ tracker(d, c) }}
+        <p style="text-align:center">Reference: {{ d.ref }}. After paying through the Trust UPI QR, submit your UTR so the Trust can verify your payment. No receipt exists until the payment is verified.</p>
+        <p class="acts"><a class="btn gold"
+                           href="{{ url_for('donate',resume=d.ref) }}">Continue UPI payment</a></p>
+      {% elif d.status=="rejected" %}
+        <div class="big">⚠️</div>
+        <h2 class="err-t" style="text-align:center">PAYMENT COULD NOT BE VERIFIED</h2>
+        {{ tracker(d, c) }}
+        <p style="text-align:center">
+          The Trust could not match this payment with its bank account, so no receipt was issued.
+          {% if d.reject_reason %}
+            <br>
+            <b>Reason:</b> {{ d.reject_reason }}
+          {% endif %}
+        </p>
+        <p style="text-align:center" class="note">Reference: {{ d.ref }}. If you have paid, please contact the Trust at {{ S.receipt_email }} with your UTR and this reference.</p>
+        <p class="acts"><a class="btn gold" href="{{ url_for('donate') }}">Start a new donation</a></p>
+      {% elif d.status=="failed" %}
+        <div class="big">❌</div>
+        <h2 class="err-t" style="text-align:center">Payment failed</h2>
+        <p style="text-align:center">No amount was received and no receipt was issued. Reference: {{ d.ref }}</p>
+        <p style="text-align:center"><a class="btn gold" href="{{ url_for('donate') }}">Try again</a></p>
+      {% else %}
+        <div class="big">⏳</div>
+        <h2 style="text-align:center">Payment pending</h2>
+        <p style="text-align:center">Reference: {{ d.ref }}. The receipt is issued only after the payment is confirmed. Refresh this page in a minute.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+{% block js %}
+  <script>
+    /* Donor menu: ≡ opens the list; Address / Certification open their panel on this page */
+    (function () {
+      var t = document.getElementById('dmt'), l = document.getElementById('dml');
+      if (!t || !l) return;
+      function setOpen(o) { l.classList.toggle('open', o); t.setAttribute('aria-expanded', o); }
+      t.addEventListener('click', function (e) { e.stopPropagation(); setOpen(!l.classList.contains('open')); });
+      document.addEventListener('click', function (e) { if (!l.contains(e.target) && e.target !== t) setOpen(false); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+      l.querySelectorAll('a[data-panel]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelectorAll('.dpanel').forEach(function (p) { p.hidden = p.id !== a.dataset.panel; });
+          l.querySelectorAll('a').forEach(function (x) { x.classList.toggle('on', x === a); });
+          setOpen(false);
+          document.getElementById(a.dataset.panel).scrollIntoView({behavior: 'smooth', block: 'center'});
+        });
+      });
+    })();
+  </script>
+  {% if d.status == "pending" or (d.status == "paid" and not c) %}
+    <script>
+      /* Check the payment status every 5 seconds. The moment the Trust verifies the payment
+         (or the certificate is ready) this page reloads by itself and shows the Download button. */
+      (function () {
+        var ref = {{ d.ref|tojson }}, shown = {{ d.status|tojson }}, tries = 0, busy = false;
+        var live = document.getElementById('trkLive');
+        function check() {
+          if (busy) return;
+          busy = true;
+          fetch('/api/status/' + ref, {cache: 'no-store'}).then(function (r) { return r.json(); }).then(function (j) {
+            if (j.status !== shown || j.ready) {
+              if (live) live.textContent = '✅ Updated – loading your certificate…';
+              clearInterval(timer);
+              setTimeout(function () { location.reload(); }, 500);
+            } else if (live && shown === 'pending') {
+              live.textContent = '⏳ Waiting for the Trust to verify · last checked ' + new Date().toLocaleTimeString();
+            }
+          }).catch(function () {}).then(function () { busy = false; });
+        }
+        var timer = setInterval(function () {
+          if (++tries > 600) return clearInterval(timer);            // stop after 30 minutes
+          check();
+        }, 3000);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+        check();
+      })();
+    </script>
+  {% endif %}
+{% endblock %}

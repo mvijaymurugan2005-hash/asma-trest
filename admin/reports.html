@@ -1,0 +1,12 @@
+{% extends "admin/a_base.html" %}
+{# Reports, CSV / Excel export and backup #}
+{% block body %}
+  <h1>Reports & Database Backup</h1>
+  <div class="fs">
+    <p><a class="btn blue" href="{{ url_for('a_csv') }}">⬇ Donation report (CSV)</a> <a class="btn blue" href="{{ url_for('a_xlsx') }}">⬇ Donation report (Excel)</a></p>
+    <p><a class="btn blue" href="{{ url_for('a_g80_csv') }}">⬇ 80G / Form 10BD data (CSV)</a> <a class="btn blue" href="{{ url_for('a_g80_xlsx') }}">⬇ 80G / Form 10BD data (Excel)</a></p>
+    <p><a class="btn gold"
+          href="{{ url_for('a_backup') }}">💾 Download full backup (database + uploads + certificates)</a></p>
+    <p class="note">Take a backup regularly and keep it somewhere safe off the server.</p>
+  </div>
+{% endblock %}

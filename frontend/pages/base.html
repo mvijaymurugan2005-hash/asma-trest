@@ -1,0 +1,98 @@
+{# MAIN LAYOUT used by every public page: head, top bar, menu, footer, WhatsApp button #}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>
+      {% block title %}
+        {{ S.trust_name }} – {{ S.location }}
+      {% endblock %}
+    </title>
+    <meta name="description"
+          content="{% block desc %}{{ S.about_text[:150] }}{% endblock %}">
+    <meta property="og:title" content="{{ S.trust_name }}">
+    <link rel="icon"
+          type="image/png"
+          href="{{ url_for('static',filename='img/asma-logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='style.css',v=CSS_V) }}">
+  </head>
+  <body>
+    <div class="top">
+      <div class="wrap">
+        <div><span>✉ {{ S.email }}</span><span>☎ {{ S.phone }}</span><span>📍 {{ S.location }}</span></div>
+        <a class="btn gold"
+           href="{{ url_for('donate') }}"
+           style="padding:6px 18px">Donate Now ♥</a>
+      </div>
+    </div>
+    <header>
+      <div class="wrap">
+        <div class="hl">
+          {% block hdr_left %}{% endblock %}
+          <a class="logo" href="{{ url_for('home') }}">
+          {% if S.logo %}
+            <img src="/media/{{ S.logo }}" alt="{{ S.trust_name }} logo" height="54">
+          {% else %}
+            <img src="{{ url_for('static',filename='img/asma-logo.png') }}"
+                 alt="{{ S.trust_name }} logo"
+                 width="54"
+                 height="54">
+          {% endif %}
+          <div><b>ASMA</b><small>{{ S.tagline }}</small></div>
+          </a>
+        </div>
+        <button id="mb"
+                aria-label="Menu"
+                onclick="document.getElementById('nv').classList.toggle('open')">☰</button>
+        <nav id="nv">
+          {% for ep,l in [('home','Home'),('about','About Us'),('activities','Our Activities'),('projects','Our Projects'),('gallery','Gallery'),('donate','Donation'),('contact','Contact Us')] %}
+            <a href="{{ url_for(ep) }}"
+               class="{{'on' if request.endpoint==ep or (ep=='projects' and request.endpoint=='project')}}">{{ l }}</a>
+          {% endfor %}
+          <a href="{{ url_for('login') }}" class="adm">🔒 Admin Login</a>
+        </nav>
+      </div>
+    </header>
+    {% for c,m in get_flashed_messages(with_categories=true) %}
+      <div class="flash {{ c }}">{{ m }}</div>
+    {% endfor %}
+    {% block body %}{% endblock %}
+    <a class="fab"
+       href="https://wa.me/{{ S.whatsapp }}"
+       target="_blank"
+       rel="noopener"
+       aria-label="WhatsApp">💬</a>
+    <footer>
+      <div class="wrap">
+        <div class="flogo">
+          {% if S.logo %}
+            <img src="/media/{{ S.logo }}"
+                 alt="{{ S.trust_name }} logo"
+                 width="48"
+                 height="48">
+          {% else %}
+            <img src="{{ url_for('static',filename='img/asma-logo.png') }}"
+                 alt="{{ S.trust_name }} logo"
+                 width="48"
+                 height="48">
+          {% endif %}
+          <div>
+            © {{ year }} {{ S.trust_name }}. All Rights Reserved.
+            <br>
+            <a href="{{ url_for('track') }}">Track donation</a> · <a href="{{ url_for('verify_form') }}">Verify a receipt</a> · <a href="{{ url_for('g80_info') }}">80G status</a>
+          </div>
+        </div>
+        <div class="soc">
+          {% for k,l in [('facebook','f'),('youtube','▶'),('x','𝕏'),('linkedin','in')] %}
+            {% if S[k] %}
+              <a href="{{ S[k] }}" target="_blank" rel="noopener" aria-label="{{ k }}">{{ l }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </footer>
+    {% block js %}{% endblock %}
+  </body>
+</html>

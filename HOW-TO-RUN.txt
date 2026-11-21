@@ -1,0 +1,54 @@
+HOW TO RUN (Windows)
+1. Extract the zip. Open the folder that contains run.py and backend/ in VS Code (File > Open Folder).
+2. Easiest: double-click start.bat
+   OR in VS Code terminal:
+       python -m venv venv
+       Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+       venv\Scripts\activate
+       pip install -r requirements.txt
+       python run.py
+3. Open http://127.0.0.1:5000
+   Admin: http://127.0.0.1:5000/admin   user: admin   password: Admin@12345 (change it in .env)
+NOTE: Do NOT run backend\app.py directly (relative imports). Always run run.py.
+
+NEW: after updating run  pip install -r requirements.txt  again. See DONATION-RECEIPT-AND-80G-GUIDE.txt for the receipt + 80G workflow.
+
+
+=====================================================================
+DONATION FLOW (what the donor sees)
+=====================================================================
+1. Donor fills name, mobile (choose country flag + number), email, address, amount.
+   Every field is checked while typing; mistakes show in red immediately.
+2a. UPI QR  : scan QR -> pay -> press "I HAVE COMPLETED PAYMENT" -> enter 12-digit UTR
+              + upload screenshot -> status page "Verification pending".
+              The Trust admin checks the credit in the bank account (Admin > Donations).
+              The moment the admin presses Verify, the donor's status page changes by itself
+              to PAYMENT SUCCESSFUL and the certificate (PDF) can be downloaded.
+2b. ONLINE  : (optional, instant) donor pays by card / UPI / net banking through Razorpay.
+              Certificate is generated automatically as soon as Razorpay confirms the payment.
+              To switch it on, edit the .env file:
+                  PAYMENT_MODE=razorpay
+                  RAZORPAY_KEY_ID=rzp_live_xxxxxxxx
+                  RAZORPAY_KEY_SECRET=xxxxxxxx
+                  RAZORPAY_WEBHOOK_SECRET=xxxxxxxx
+              (webhook URL in the Razorpay dashboard:  https://YOUR-DOMAIN/webhook/razorpay)
+              Without these keys the website simply shows the UPI QR option only.
+
+
+KEEPING YOUR DATA WHEN YOU UPDATE THE WEBSITE (important)
+---------------------------------------------------------
+All donors, payments, receipts and 80G records are stored in ONE SQLite file:
+    <project folder>\database\asma.db        (uploads and screenshots: <project folder>\uploads\)
+If you extract a new version of the website into a NEW folder, that folder starts with an EMPTY database,
+so the old donors will not appear. To keep your data, do ONE of these before you start the new version:
+  1. Copy the old  database  and  uploads  folders into the new project folder (replace the empty ones), or
+  2. Set a fixed data folder in .env, e.g.   DATA_DIR=C:\ASMA-DATA   (the website then always uses C:\ASMA-DATA\database
+     and C:\ASMA-DATA\uploads, whatever folder the code is in).
+When the server starts it prints:  ASMA database: <path>  (N donations saved)  - check that this is the file you expect.
+Admin > Reports & Backup downloads a full backup at any time.
+
+TESTS
+-----
+    python tests/test_upi_flow.py            (payment / receipt / 80G flow)
+    python tests/test_admin_donor_flow.py    (admin opens donor records, data persistence)
+Both use a throw-away database, never your real one.

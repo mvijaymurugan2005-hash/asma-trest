@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{# Contact form, details and Google map #}
+{% from '_m.html' import head, contactcard with context %}
+{% block title %}
+  Contact Us – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("Contact Us") }}
+  <div class="wrap page">
+    <div class="two">
+      <div>
+        {{ contactcard() }}
+        <p class="btnrow" style="margin-top:14px">
+          {% for k in ['facebook','youtube','x','linkedin','instagram'] %}
+            {% if S[k] %}
+              <a class="btn blue"
+                 style="padding:6px 16px;
+                        min-height:38px;
+                        font-size:14px"
+                 href="{{ S[k] }}"
+                 target="_blank"
+                 rel="noopener">{{ k|capitalize }}</a>
+            {% endif %}
+          {% endfor %}
+        </p>
+      </div>
+      <form method="post" class="card">
+        <input type="hidden" name="_csrf" value="{{ csrf() }}">
+        <h3>Send us a message</h3>
+        <label>Name</label>
+        <input name="name"
+               required
+               minlength="2"
+               maxlength="80"
+               value="{{ f.name }}">
+        <label>Email</label>
+        <input name="email"
+               type="email"
+               required
+               maxlength="120"
+               value="{{ f.email }}">
+        <label>Phone</label>
+        <input name="phone" type="tel" maxlength="20" value="{{ f.phone }}">
+        <label>Message</label>
+        <textarea name="message" required minlength="2" maxlength="2000">{{f.message}}</textarea>
+        <br>
+        <button class="btn gold" style="margin-top:12px">Send Message</button>
+      </form>
+    </div>
+    <br>
+    {% set LAT = "12.2493382" %}
+    {% set LNG = "79.0713247" %}
+    <section class="mapbox card" aria-label="Our location on Google Maps">
+      <div class="mapbar">
+        <h3>📍 Find Us</h3>
+        <div class="mapbtns">
+          <a class="btn gold"
+             href="https://www.google.com/maps/dir/?api=1&destination={{ LAT }},{{ LNG }}"
+             target="_blank"
+             rel="noopener">➤ Get Directions</a>
+          <a class="btn blue"
+             href="https://www.google.com/maps/search/?api=1&query={{ LAT }},{{ LNG }}"
+             target="_blank"
+             rel="noopener">View Larger Map</a>
+        </div>
+      </div>
+      <iframe class="gmap"
+              src="https://maps.google.com/maps?q={{ LAT }},{{ LNG }}&hl=en&z=16&output=embed"
+              loading="lazy"
+              allowfullscreen
+              referrerpolicy="no-referrer-when-downgrade"
+              title="ASMA Group of Company location map"></iframe>
+    </section>
+  </div>
+{% endblock %}

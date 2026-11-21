@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{# Single project detail page #}
+{% from '_m.html' import head, gitem with context %}
+{% block title %}
+  {{ p.title }} – {{ S.trust_name }}
+{% endblock %}
+{% block desc %}
+  {{ p.short }}
+{% endblock %}
+{% block body %}
+  {{ head(p.title) }}
+  <div class="wrap page">
+    <p>
+      <b>{{ p.category }}</b> · {{ p.status }}
+      {% if p.date %}
+        · 📅 {{ p.date }}
+      {% endif %}
+      {% if p.location %}
+        · 📍 {{ p.location }}
+      {% endif %}
+    </p>
+    {% if p.main_image %}
+      <img src="/media/{{ p.main_image }}"
+           alt="{{ p.title }}"
+           style="max-width:100%;
+                  border-radius:16px;
+                  max-height:460px">
+    {% endif %}
+    <p class="pre"><b>{{ p.short }}</b></p>
+    <p class="pre">{{ p.full }}</p>
+    {% if p.video %}
+      <video src="/media/{{ p.video }}"
+             controls
+             style="max-width:100%;
+                    border-radius:12px">
+      </video>
+    {% endif %}
+    <div class="gal">
+      {% for f in p.images|jl %}
+        <div>
+          <img src="/media/{{ f }}" alt="{{ p.title }}" loading="lazy">
+        </div>
+      {% endfor %}
+      {% for g in gal %}
+        {{ gitem(g) }}
+      {% endfor %}
+    </div>
+    <p><a class="btn blue" href="{{ url_for('projects') }}">‹ All Projects</a></p>
+  </div>
+{% endblock %}

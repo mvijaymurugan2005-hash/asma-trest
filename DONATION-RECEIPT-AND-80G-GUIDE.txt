@@ -1,0 +1,38 @@
+ DONATION RECEIPT + 80G WORKFLOW - QUICK GUIDE
+=============================================
+AFTER UPDATING: run  pip install -r requirements.txt  once (openpyxl was added for Excel export).
+The database upgrades itself on start-up. Existing donations and certificates are kept.
+
+WHAT HAPPENS WHEN A DONOR PAYS
+1. Donor fills: name, mobile, email, full address, PAN (optional), amount.
+2. Payment is verified on the SERVER (Razorpay signature + order/amount check, plus webhook).
+3. Only then a unique receipt number + PDF receipt (with QR) is created - exactly once per donation.
+4. Success page shows: PAYMENT SUCCESSFUL!  [DOWNLOAD DONATION RECEIPT]  [CHECK 80G CERTIFICATE STATUS]
+5. The PDF is also emailed (needs SMTP_* in .env).
+The Payment Transaction ID is captured automatically from the payment gateway (a donor cannot know it before paying).
+
+TEST vs LIVE
+- PAYMENT_MODE=test  -> simulated payments, receipts are marked TEST (watermark, TEST- number), never part of 80G.
+- PAYMENT_MODE=razorpay -> real payments (needs RAZORPAY_* keys in .env and the webhook URL  <your-site>/webhook/razorpay
+  with event payment.captured).  Set BASE_URL to your https:// domain so QR codes point to the live site.
+
+80G (Form 10AC provisional approval - details are editable in Admin > Website Settings > 80G)
+- Receipt  = acknowledgement only.  Form 10BE = statutory certificate, NEVER generated here.
+- Admin > 80G Tracking / donation page: Review -> Verified eligible (needs donor PAN) -> Pre-ARN (only after
+  eligibility is verified AND you confirm the portal acknowledgement) -> Form 10BD filed -> Form 10BE issued
+  (you must upload the official PDF from the Income Tax portal) -> email it to the donor.
+- Export "Form 10BD data" (CSV/Excel) from Admin > 80G Tracking to prepare the portal filing.
+- Donors check status at  /80g  (receipt number + email) or via the button on the success page.
+
+ADMIN
+- Donations: search/filter, details page with full PAN + address (admin only, never cached), resend receipt,
+  change receipt number (old QR/links keep working), regenerate PDF, revoke.
+- Reports: Donations CSV/Excel (PAN masked) and 80G/10BD data CSV/Excel (full PAN).
+- Signature, seal, PAN, registration, DARPAN, address on the receipt: Admin > Website Settings.
+
+
+OLD UPI QR PAYMENT - REMOVED FROM THE PUBLIC DONATE PAGE
+=========================================================
+New donations are accepted only through Razorpay online payment. The UPI QR image, UPI ID, UTR form and screenshot upload
+are gone from the Donate page. Earlier UPI QR donations (UTR, screenshot, verifier, receipt) remain in the database and in
+Admin for reporting and audit. A donation that was still 'pending' can still be verified/rejected in Admin.

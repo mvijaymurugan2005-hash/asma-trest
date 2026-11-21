@@ -1,0 +1,38 @@
+{% extends "admin/a_base.html" %}
+{# Admin dashboard (summary numbers) #}
+{% block body %}
+  <h1>Dashboard</h1>
+  <div class="kp">
+    <div><b>{{ st.projects }}</b>Projects ({{ st.published }} published)</div>
+    <div><b>{{ st.activities }}</b>Activities</div>
+    <div><b>{{ st.gallery }}</b>Gallery items</div>
+    <div><b>{{ st.paid }}</b>Paid donations</div>
+    <div><b>₹{{ st.total|inr }}</b>Total received</div>
+    <div><b>{{ st.certs }}</b>Certificates</div>
+    <div><a href="{{ url_for('a_donations',status='pending') }}"><b>{{ st.pending }}</b>UPI awaiting verification</a></div>
+    <div><b>{{ st.msgs }}</b>Unread messages</div>
+  </div>
+  <h3>Recent donations</h3>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th>Ref</th>
+      <th>Name</th>
+      <th>Amount</th>
+      <th>Status</th>
+    </tr>
+    {% for d in recent %}
+      <tr>
+        <td>{{ d.created }}</td>
+        <td>{{ d.ref }}</td>
+        <td>{{ d.name }}</td>
+        <td>₹{{ d.amount|inr }}</td>
+        <td>{{ d.status }}</td>
+      </tr>
+    {% else %}
+      <tr>
+        <td colspan="5">No donations yet.</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

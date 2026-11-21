@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{# Receipt verification page #}
+{% from '_m.html' import head with context %}
+{% block title %}
+  Verify Receipt
+{% endblock %}
+{% block body %}
+  {{ head("Receipt Verification") }}
+  <div class="wrap page">
+    <div class="form card">
+      <form action="{{ url_for('verify_form') }}">
+        <label>Receipt number</label><input name="n"
+                                            value="{{ num or '' }}"
+                                            placeholder="ASMA-2026-27-000001-XXXX"><button class="btn blue" style="margin-top:12px">Verify</button>
+      </form>
+      {% if searched %}
+        <hr>
+        {% if c and not c.revoked %}
+          <h3 class="ok-t">✅ Valid donation receipt</h3>
+          <p>Receipt No: <b>{{ c.number }}</b></p>
+          <p>Donor: <b>{{ c.name }}</b></p>
+          <p>Amount: <b>₹{{ c.amount|inr }}</b></p>
+          <p>Date: {{(c.paid_at or c.paid_on)[:10]}}</p>
+          {% if c.dmode=="test" %}
+            <p class="err-t"><b>TEST receipt – no real payment was made.</b></p>
+          {% endif %}
+          <p class="note">This verifies a donation receipt / acknowledgement. It is not a Form 10BE (80G) certificate.</p>
+        {% elif c %}
+          <h3 class="err-t">⚠ This receipt has been revoked.</h3>
+        {% else %}
+          <h3 class="err-t">❌ No receipt found with this number.</h3>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

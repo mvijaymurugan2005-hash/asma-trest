@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{# Page not found #}
+{% block body %}
+  <div class="wrap page" style="text-align:center">
+    <div class="big">🔎</div>
+    <h1>Page not found</h1>
+    <a class="btn blue" href="{{ url_for('home') }}">Go Home</a>
+  </div>
+{% endblock %}

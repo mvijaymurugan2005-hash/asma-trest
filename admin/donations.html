@@ -1,0 +1,90 @@
+{% extends "admin/a_base.html" %}
+{# Admin donations list with filters #}
+{% block body %}
+  <h1>Donations</h1>
+  <form method="get" class="filters">
+    <input name="s"
+           value="{{ s }}"
+           placeholder="Search name, email, mobile, reference, receipt no., UTR"><select name="status">
+      <option value="">All status</option>
+      {% for x in ['paid','pending','rejected','failed','created'] %}
+        <option {{'selected' if x==st}}>{{ x }}</option>
+      {% endfor %}
+    </select><select name="mode">
+      <option value="">Live + Test</option>
+      <option value="live" {{'selected' if md=='live'}}>Live only</option>
+      <option value="test" {{'selected' if md=='test'}}>Test only</option>
+    </select><select name="channel">
+      <option value="">All methods</option>
+      <option value="upi_qr" {{'selected' if ch=='upi_qr'}}>UPI QR</option>
+      <option value="razorpay" {{'selected' if ch=='razorpay'}}>Razorpay / online</option>
+    </select><button class="btn gold">Filter</button>
+  </form>
+  <p><a class="btn blue" href="{{ url_for('a_csv') }}">⬇ CSV</a> <a class="btn blue" href="{{ url_for('a_xlsx') }}">⬇ Excel</a> <a class="btn gold" href="{{ url_for('a_g80') }}">80G tracking</a></p>
+  <div class="tw">
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Receipt / Ref</th>
+        <th>Donor</th>
+        <th>Contact</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>80G</th>
+        <th>Actions</th>
+      </tr>
+      {% for d in rows %}
+        <tr>
+          <td>{{ d.paid_at or d.created }}</td>
+          <td>
+            {% if d.number %}
+              <b>{{ d.number }}</b>
+              <br>
+            {% endif %}
+            <small>{{ d.ref }}
+              <br>
+            {{ d.utr or d.payment_id or '' }}</small>
+          </td>
+          <td>
+            {{ d.name }}
+            <br>
+            <small>PAN: {{'on file' if d.pan else '–'}}</small>
+          </td>
+          <td>
+            {{ d.mobile }}
+            <br>
+            {{ d.email }}
+          </td>
+          <td>₹{{ d.amount|inr }}</td>
+          <td>
+            {% if d.status=="pending" %}
+              <span class="tag pend">PENDING VERIFICATION</span>
+            {% elif d.status=="rejected" %}
+              <span class="tag rej">REJECTED</span>
+            {% else %}
+              {{ d.status }}
+            {% endif %}
+            {% if d.channel=="upi_qr" %}
+              <span class="tag upi">UPI QR</span>
+            {% endif %}
+            {% if d.mode=="test" %}
+              <span class="tag">TEST</span>
+            {% endif %}
+          </td>
+          <td>{{ {'review':'Review','pan_needed':'PAN needed','eligible':'Eligible','pre_arn':'Pre-ARN','filed':'10BD filed','issued':'10BE issued','na':'N/A'}.get(d.g80,'–') if d.status=='paid' else '–' }}</td>
+          <td>
+            <a class="btn {{'gold' if d.status=='pending' else 'blue'}}"
+               href="{{ url_for('a_donation',id=d.id,back=back) }}">{{'Verify' if d.status=='pending' else 'Details'}}</a>
+            {% if d.number %}
+              <a class="btn blue" href="{{ url_for('cert_pdf',num=d.number,dl=1) }}">PDF</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="8">No donations.</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+{% endblock %}

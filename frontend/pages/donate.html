@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{# Donation form - online payment through Razorpay #}
+{% from '_m.html' import head with context %}
+{% block title %}
+  Donate – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("Support Our Mission") }}
+  <div class="wrap page">
+    <div class="form card">
+
+      {# ================= STEP 1 : donor details ================= #}
+      <div id="fw">
+        <form id="df" novalidate>
+
+          <label for="name">Full name</label>
+          <input id="name" name="name" maxlength="80" autocomplete="name" required>
+          <div class="fmsg" id="msg_name" aria-live="polite"></div>
+
+          <label for="mobile">Mobile number <small>(select country, then type the number)</small></label>
+          <input id="mobile" type="tel" autocomplete="tel-national" placeholder="98765 43210" required>
+          <div class="fmsg" id="msg_mobile" aria-live="polite"></div>
+
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+          <div class="fmsg" id="msg_email" aria-live="polite"></div>
+
+          <label for="address">Full address</label>
+          <textarea id="address" name="address" maxlength="300" rows="3"
+                    placeholder="House / street, area, city, state, PIN code"
+                    style="min-height:80px" required></textarea>
+          <div class="fmsg" id="msg_address" aria-live="polite"></div>
+
+          <label for="pan">
+            PAN number
+            {% if pan_from %}
+              <small>(required for donations of ₹{{ pan_from|inr }} or more)</small>
+            {% else %}
+              <small>(optional)</small>
+            {% endif %}
+          </label>
+          <input id="pan" name="pan" maxlength="10" placeholder="ABCDE1234F"
+                 autocomplete="off" style="text-transform:uppercase">
+          <div class="fmsg" id="msg_pan" aria-live="polite"></div>
+          <p class="note pannote">
+            PAN is needed if you wish to be considered for 80G reporting.
+            It is kept confidential and shown only in masked form on your receipt.
+          </p>
+
+          <label for="amount">Donation amount (₹) <small>(minimum ₹99)</small></label>
+          <input id="amount" name="amount" type="number" min="99" max="500000" step="1"
+                 inputmode="numeric" value="{{ amount }}" required>
+          <div class="fmsg" id="msg_amount" aria-live="polite"></div>
+
+          <label for="message">Message (optional)</label>
+          <textarea id="message" name="message" maxlength="300"></textarea>
+
+          <p id="m" class="err-t"></p>
+
+          {% if ONLINE %}
+            <button class="btn gold" id="bo" style="width:100%;margin-top:10px">
+              Donate securely – Card / UPI / Net Banking ♥
+            </button>
+            <p class="note pannote">
+              Payments are processed securely by Razorpay. Your donation certificate / receipt is generated
+              automatically as soon as the payment is confirmed, and you can download it right away.
+            </p>
+          {% else %}
+            <button class="btn gold" id="bo" disabled style="width:100%;margin-top:10px">
+              Online donation is not available right now
+            </button>
+            <p class="note">
+              Online payments are being set up. Please contact the Trust to donate.
+            </p>
+          {% endif %}
+        </form>
+      </div>
+
+      {# shown after an online payment while the receipt is being prepared #}
+      <div id="wait" class="flash ok" hidden style="margin-top:12px">
+        ✅ Payment received – preparing your certificate…
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/intl-tel-input/css/intlTelInput.min.css') }}">
+  <script>
+    /* settings handed to donate.js */
+    window.DONATE = {
+      csrf: "{{ csrf() }}",
+      trustName: {{ S.trust_name|tojson }},
+      panFrom: {{ pan_from|int }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='vendor/intl-tel-input/intlTelInputWithUtils.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='donate.js') }}"></script>
+{% endblock %}

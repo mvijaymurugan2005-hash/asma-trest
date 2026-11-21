@@ -1,0 +1,42 @@
+{# ADMIN LAYOUT used by every admin page: side menu + flash messages #}
+<!DOCTYPE html>
+<html data-theme="light" style="color-scheme:light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Admin – {{ S.trust_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='style.css',v=CSS_V) }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='admin.css',v=CSS_V) }}">
+  </head>
+  <body>
+    <div class="side">
+      <h3>ASMA Admin</h3>
+      {% for u,l in [(url_for('dash'),'📊 Dashboard'),(url_for('a_settings')+'#trust','🏛 Trust Information'),(url_for('a_list',name='banners'),'🖼 Home Banner'),(url_for('a_settings')+'#content','📄 About Us / Website Content'),(url_for('a_list',name='activities'),'🎓 Activities'),(url_for('a_list',name='projects'),'📁 Projects'),(url_for('a_list',name='gallery'),'📷 Gallery'),(url_for('a_donations'),'💰 Donations'),(url_for('a_donations',status='pending'),'⏳ UPI Verification' + (' (%d)' % PEND if PEND else '')),(url_for('a_certs'),'📜 Receipts & Numbers'),(url_for('a_g80'),'🧾 80G Tracking'),(url_for('a_list',name='trustees'),'👥 Trustees & Members'),(url_for('a_messages'),'✉ Contact Messages'),(url_for('a_settings'),'⚙ Website Settings'),(url_for('a_password'),'🔑 Admin Account'),(url_for('a_reports'),'💾 Reports & Backup'),('/','🌐 View Website')] %}
+        <a href="{{ u }}">{{ l }}</a>
+      {% endfor %}
+      <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf() }}">
+        <button class="btn gold" style="width:100%; margin-top:14px">Logout</button>
+      </form>
+    </div>
+    <div class="main">
+      {% for c,m in get_flashed_messages(with_categories=true) %}
+        <div class="flash {{ c }}" style="margin:0 0 14px">{{ m }}</div>
+      {% endfor %}
+      {% block body %}{% endblock %}
+    </div>
+    <script>
+      /* a form can be submitted only once (double click / slow network never repeats it) */
+      document.addEventListener('submit', function (e) {
+        var f = e.target;
+        if (e.defaultPrevented || String(f.method).toLowerCase() !== 'post') return;
+        setTimeout(function () {
+          f.querySelectorAll('button:not([type=button])').forEach(function (b) { b.disabled = true; });
+        }, 0);
+      });
+      /* browser Back / forward: re-read the page from the server instead of showing a stale or half-submitted copy */
+      window.addEventListener('pageshow', function (e) { if (e.persisted) location.reload(); });
+    </script>
+  </body>
+</html>

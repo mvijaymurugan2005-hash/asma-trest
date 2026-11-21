@@ -1,0 +1,190 @@
+{% extends "admin/a_base.html" %}
+{# Website Settings page (tabs, image upload / remove) #}
+{% block body %}
+  {# ---- small helper data: icon + short help line for each section / field ---- #}
+  {% set icons = {"trust": "🏛", "contact": "📞", "content": "📄", "cert": "🧾", "g80": "📜"} %}
+  {% set hints = {
+    "logo": "Shown in the website header, footer and on donation receipts. Remove it to go back to the default ASMA logo.",
+    "signature_img": "Optional. Remove it to use the default signature.",
+    "seal_img": "Optional. Remove it to use the default seal.",
+    "whatsapp": "Digits only with country code, e.g. 919787162094",
+    "map_embed": "Optional. Paste the Google Maps embed link (or the whole iframe code). Leave empty to use the automatic map.",
+    "achievements": "One per line like  500+|Students supported  . Leave empty to show the default four boxes.",
+    "registration": "Shown on the About Us page.",
+    "hero_text": "Short sentence under the big heading on the home page."
+  } %}
+  <div class="sh">
+    <div>
+      <h1>Website Settings</h1>
+      <p class="sub">Edit your trust details, contact info, home page text and receipt details. Changes go live as soon as you save.</p>
+    </div>
+    <span id="dirty" class="dirty" hidden>● Unsaved changes</span>
+  </div>
+  <form method="post" enctype="multipart/form-data" id="sf">
+    <input type="hidden" name="_csrf" value="{{ csrf() }}">
+    <div class="tabs" id="tabs" role="tablist">
+      {% for gid,gt,fl in groups %}
+        <a href="#{{ gid }}" data-g="{{ gid }}" role="tab">{{ icons[gid] }} {{ gt }}</a>
+      {% endfor %}
+    </div>
+    {% for gid,gt,fl in groups %}
+      <section class="fs pane" id="{{ gid }}" data-g="{{ gid }}">
+        <h3>{{ icons[gid] }} {{ gt }}</h3>
+        {% for k,l,t in fl %}
+          <div class="fld">
+            <label for="f_{{ k }}">{{ l }}</label>
+            {% if t=="textarea" %}
+              <textarea id="f_{{k}}" name="{{k}}" data-auto>{{S[k]}}</textarea>
+            {% elif t=="image" %}
+              <div class="imgbox" data-img data-orig="{{ S[k] and '/media/'+S[k] }}">
+                <div class="imgprev">
+                  {% if S[k] %}
+                    <img src="/media/{{ S[k] }}" alt="Current image">
+                  {% else %}
+                    <span class="noimg">Default image
+                      <br>
+                    in use</span>
+                  {% endif %}
+                </div>
+                <div class="imgctl">
+                  <span class="imgstate">
+                    {% if S[k] %}
+                      Current image
+                    {% else %}
+                      No custom image uploaded
+                    {% endif %}
+                  </span>
+                  <div class="imgbtns">
+                    <label class="btn blue sm" for="f_{{ k }}">✎ {{'Change' if S[k] else 'Upload'}}</label>
+                    {% if S[k] %}
+                      <button type="button" class="btn red sm" data-rm>🗑 Remove</button>
+                    {% endif %}
+                    <button type="button" class="btn sm ghost" data-undo hidden>↩ Undo</button>
+                  </div>
+                  <input id="f_{{ k }}"
+                         class="file"
+                         type="file"
+                         name="{{ k }}"
+                         accept="image/*">
+                  <input type="hidden" name="remove_{{ k }}" value="" data-flag>
+                </div>
+              </div>
+            {% else %}
+              <input id="f_{{ k }}" name="{{ k }}" value="{{ S[k] }}">
+            {% endif %}
+            {% if hints[k] %}
+              <small class="hint">{{ hints[k] }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </section>
+    {% endfor %}
+    <div class="savebar">
+      <button class="btn gold">💾 Save all settings</button><a class="btn ghost" href="{{ url_for('a_settings') }}">Cancel</a><a class="btn ghost" href="/" target="_blank" rel="noopener">View website ↗</a>
+    </div>
+  </form>
+  <script>
+      (function() {
+          var f = document.getElementById('sf'),
+              dirty = document.getElementById('dirty'),
+              panes = [].slice.call(document.querySelectorAll('.pane')),
+              tabs = [].slice.call(document.querySelectorAll('#tabs a'));
+          document.documentElement.classList.add('js');
+
+          function show(id) {
+              if (!document.getElementById(id) || !document.getElementById(id).classList.contains('pane')) id = panes[0].id;
+              panes.forEach(function(p) {
+                  p.hidden = p.id !== id
+              });
+              tabs.forEach(function(a) {
+                  a.classList.toggle('on', a.dataset.g === id)
+              });
+              grow();
+          }
+
+          function grow() {
+              [].forEach.call(document.querySelectorAll('textarea[data-auto]'), function(t) {
+                  t.style.height = 'auto';
+                  if (t.offsetParent) t.style.height = Math.max(100, t.scrollHeight + 2) + 'px'
+              })
+          }
+          window.addEventListener('hashchange', function() {
+              show(location.hash.slice(1))
+          });
+          show(location.hash.slice(1));
+          var isDirty = false;
+
+          function mark() {
+              isDirty = true;
+              dirty.hidden = false
+          }
+          f.addEventListener('input', function(e) {
+              mark();
+              if (e.target.matches('textarea[data-auto]')) grow()
+          });
+          f.addEventListener('submit', function() {
+              isDirty = false
+          });
+          window.addEventListener('beforeunload', function(e) {
+              if (isDirty) {
+                  e.preventDefault();
+                  e.returnValue = ''
+              }
+          });
+          /* image widgets: live preview of a chosen file, Remove / Undo */
+          [].forEach.call(document.querySelectorAll('[data-img]'), function(b) {
+              var inp = b.querySelector('input[type=file]'),
+                  flag = b.querySelector('[data-flag]'),
+                  rm = b.querySelector('[data-rm]'),
+                  undo = b.querySelector('[data-undo]'),
+                  prev = b.querySelector('.imgprev'),
+                  state = b.querySelector('.imgstate'),
+                  orig = b.dataset.orig,
+                  origHTML = prev.innerHTML,
+                  origState = state.textContent;
+
+              function reset() {
+                  prev.innerHTML = origHTML;
+                  state.textContent = origState;
+                  flag.value = '';
+                  inp.value = '';
+                  b.classList.remove('gone');
+                  if (undo) undo.hidden = true;
+                  if (rm) rm.hidden = false
+              }
+              inp.addEventListener('change', function() {
+                  var fl = inp.files[0];
+                  if (!fl) return;
+                  if (fl.size > 8 * 1024 * 1024) {
+                      alert('Image is larger than 8 MB. Please choose a smaller file.');
+                      inp.value = '';
+                      return
+                  }
+                  flag.value = '';
+                  b.classList.remove('gone');
+                  prev.innerHTML = '';
+                  var im = new Image();
+                  im.alt = 'New image';
+                  im.src = URL.createObjectURL(fl);
+                  prev.appendChild(im);
+                  state.textContent = 'New image selected – click Save to apply';
+                  if (undo) undo.hidden = false;
+                  if (rm) rm.hidden = true;
+                  mark()
+              });
+              if (rm) rm.addEventListener('click', function() {
+                  if (!confirm('Remove this image? The website will use the default image instead.')) return;
+                  inp.value = '';
+                  flag.value = '1';
+                  b.classList.add('gone');
+                  prev.innerHTML = '<span class="noimg">Will be removed<br>when you save</span>';
+                  state.textContent = 'Marked for removal – click Save to apply';
+                  rm.hidden = true;
+                  undo.hidden = false;
+                  mark()
+              });
+              if (undo) undo.addEventListener('click', reset);
+          });
+      })();
+  </script>
+{% endblock %}

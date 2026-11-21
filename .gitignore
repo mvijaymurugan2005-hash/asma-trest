@@ -1,0 +1,10 @@
+database/*
+!database/supabase_schema.sql
+.env
+.env.*
+!.env.example
+venv/
+__pycache__/
+*.pyc
+uploads/*/*
+!uploads/*/.gitkeep

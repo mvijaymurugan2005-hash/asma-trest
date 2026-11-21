@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{# Projects list with category filter #}
+{% from '_m.html' import head, pcard with context %}
+{% block title %}
+  Our Projects – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("Our Projects") }}
+  <div class="wrap page">
+    <div class="chipsl">
+      <a class="{{'on' if not cat}}" href="{{ url_for('projects') }}">All</a>
+      {% for c in CATS %}
+        <a class="{{'on' if c==cat}}"
+           href="{{ url_for('projects',category=c) }}">{{ c }}</a>
+      {% endfor %}
+    </div>
+    <div class="grid">
+      {% for p in projects %}
+        {{ pcard(p) }}
+      {% else %}
+        <p class="note">No published projects in this category yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

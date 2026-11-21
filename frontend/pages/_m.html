@@ -1,0 +1,111 @@
+{# Reusable blocks (macros): project card, activity card, gallery item, contact card, page heading #}
+{% macro pcard(p) %}
+  <a class="card pj" href="{{ url_for('project',id=p.id) }}">
+    <div class="ph">
+      {% if p.main_image %}
+        <img src="/media/{{ p.main_image }}" alt="{{ p.title }}" loading="lazy">
+      {% else %}
+        📚
+      {% endif %}
+    </div>
+    <div class="cap">{{ p.title }}</div>
+    <span class="tag">{{ p.category }} · {{ p.status }}</span></a>
+{% endmacro %}
+{% macro acard(a) %}
+  <div class="card act">
+    {% if a.image %}
+      <img src="/media/{{ a.image }}"
+           alt="{{ a.title }}"
+           loading="lazy"
+           style="width:100%;
+                  height:120px;
+                  object-fit:cover;
+                  border-radius:10px">
+    {% else %}
+      <div class="ic">🎓</div>
+    {% endif %}
+    <h4>{{ a.title }}</h4>
+    <p>{{ a.description }}</p>
+  </div>
+{% endmacro %}
+{% macro gitem(g) %}
+  <div>
+    {% if g.kind=="video" %}
+      <video src="/media/{{ g.file }}" controls preload="metadata">
+      </video>
+    {% else %}
+      <img src="/media/{{ g.file }}" alt="{{ g.caption }}" loading="lazy">
+    {% endif %}
+    <p>{{ g.caption }}</p>
+  </div>
+{% endmacro %}
+{% macro head(t) %}
+  <div class="pagehead">
+    <div class="wrap">
+      <h1>{{ t }}</h1>
+    </div>
+  </div>
+{% endmacro %}
+{# 4-step donation tracker: Submitted -> Under verification -> Verified -> Certificate ready #}
+{% macro tracker(d, c) %}
+  {% set st = d.status %}
+  {% set s1 = 'done' if st in ('pending','paid','rejected') else 'now' %}
+  {% set s2 = 'now' if st=='pending' else ('done' if st in ('paid','rejected') else 'todo') %}
+  {% set s3 = 'done' if st=='paid' else ('bad' if st=='rejected' else 'todo') %}
+  {% set s4 = ('done' if c else 'now') if st=='paid' else 'todo' %}
+  <ol class="trk" aria-label="Donation status tracker">
+    <li class="{{ s1 }}">
+      <span class="dot">{{ '✓' if s1=='done' else '1' }}</span>
+      <b>Payment submitted</b>
+      <small>{{ (d.submitted_at or d.created or '')[:16] if s1=='done' else 'Submit your UTR' }}</small>
+    </li>
+    <li class="{{ s2 }}">
+      <span class="dot">{{ '✓' if s2=='done' else '2' }}</span>
+      <b>Trust is verifying</b>
+      <small>
+        {% if s2=='now' %}
+          In progress…
+        {% elif s2=='done' %}
+          Checked with bank
+        {% else %}
+          Waiting
+        {% endif %}
+      </small>
+    </li>
+    <li class="{{ s3 }}">
+      <span class="dot">{{ '✓' if s3=='done' else ('!' if s3=='bad' else '3') }}</span>
+      <b>{{ 'Not verified' if s3=='bad' else 'Payment verified' }}</b>
+      <small>{{ (d.verified_at or d.paid_at or '')[:16] if s3!='todo' else 'Waiting' }}</small>
+    </li>
+    <li class="{{ s4 }}">
+      <span class="dot">{{ '✓' if s4=='done' else '4' }}</span>
+      <b>Certificate ready</b>
+      <small>
+        {% if s4=='done' %}
+          {{ (c.issued or '')[:16] }} · Download below
+        {% elif s4=='now' %}
+          Preparing…
+        {% else %}
+          Waiting
+        {% endif %}
+      </small>
+    </li>
+  </ol>
+{% endmacro %}
+{% macro contactcard() %}
+  <div class="card contact"
+       style="background:linear-gradient(135deg,#072a68,#0b3a8c);
+              color:#fff;
+              border:0">
+    <h2 class="t" style="font-size:26px;color:var(--gold)">Get in Touch</h2>
+    <ul>
+      <li>☎ {{ S.phone }}</li>
+      <li>✉ {{ S.email }}</li>
+      <li>📍 {{ S.address }}</li>
+    </ul>
+    <a class="wa"
+       href="https://wa.me/{{ S.whatsapp }}"
+       target="_blank"
+       rel="noopener">💬 Chat on WhatsApp</a>
+  </div>
+{% endmacro %}

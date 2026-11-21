@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{# Home page: hero banner, info boxes, about, activities, projects, donate band, gallery, contact + map #}
+{% from '_m.html' import pcard, acard, gitem, contactcard with context %}
+{% block body %}
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>{{ S.hero_title }} <em>{{ S.hero_highlight }}</em></h1>
+        <p>{{ S.hero_text }}</p>
+        <div class="cta"><a class="btn gold" href="{{ url_for('donate') }}">♥ Make a Donation</a><a class="btn out" href="{{ url_for('about') }}">Learn More ›</a></div>
+      </div>
+      {% if banners %}
+        <div class="slides">
+          {% for b in banners %}
+            <img class="{{'on' if loop.first}}"
+                 src="/media/{{ b.image }}"
+                 alt="{{ b.caption or S.trust_name }}">
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="slides wide">
+          <img class="on"
+               src="{{ url_for('static',filename='img/about-logo.jpg') }}"
+               alt="{{ S.trust_name }} - All are equal, everything to everyone">
+        </div>
+      {% endif %}
+    </div>
+    <div class="dots">
+      {% for b in banners %}
+        <i class="{{'on' if loop.first}}"></i>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="stats">
+      {% set ach = S.achievements.splitlines()|select|list %}
+      {% if ach %}
+        {% for l in ach %}
+          {% set p = l.split('|') %}
+          <div><span><b>{{ p[0] }}</b><small>{{ p[1] if p|length>1 }}</small></span></div>
+        {% endfor %}
+      {% else %}
+        <div><span class="ic">🎓</span><span><b>Education</b><small>Learning support</small></span></div>
+        <div><span class="ic">🤝</span><span><b>Community</b><small>Social service</small></span></div>
+        <div><span class="ic">❤️</span><span><b>Compassion</b><small>Charity &amp; care</small></span></div>
+        <div><span class="ic">🌱</span><span><b>Growth</b><small>Skills &amp; future</small></span></div>
+      {% endif %}
+    </div>
+  </div>
+  <section>
+    <div class="wrap">
+      <div class="about">
+        <div>
+          <h2 class="t">About ASMA Trust</h2>
+          <h3>{{ S.about_title }}</h3>
+          <p class="pre">{{ S.about_text }}</p>
+          <a class="btn blue" href="{{ url_for('about') }}">Know More ›</a>
+        </div>
+        <div class="photo">
+          <img src="{{ url_for('static',filename='img/banner-children.jpg') }}"
+               alt="Happy children - {{ S.trust_name }}"
+               loading="lazy">
+        </div>
+      </div>
+      <div class="vm">
+        <div class="card">
+          <h3>Our Vision</h3>
+          <p class="pre">{{ S.vision }}</p>
+        </div>
+        <div class="card">
+          <h3>Our Mission</h3>
+          <p class="pre">{{ S.mission }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section style="background:var(--card)">
+    <div class="wrap">
+      <h2 class="t">Our Activities</h2>
+      <div class="grid">
+        {% for a in acts %}
+          {{ acard(a) }}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <h2 class="t">Featured Projects</h2>
+      <a class="btn blue vall" href="{{ url_for('projects') }}">View All Projects ›</a>
+      <div class="grid">
+        {% for p in projects %}
+          {{ pcard(p) }}
+        {% else %}
+          <p class="note">Projects will appear here once published from the Admin dashboard.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section style="background:var(--navy);color:#fff">
+    <div class="wrap" style="text-align:center">
+      <h2 class="t" style="color:#fff">Support Our Mission</h2>
+      <p>Your contribution can make a meaningful difference.</p>
+      <div class="btnrow center">
+      {% for a in [500,1000,2000] %}
+        <a class="btn {{'gold' if a==1000 else 'out'}}"
+           href="{{ url_for('donate',amount=a) }}">₹{{ a|inr }}</a>
+      {% endfor %}
+      <a class="btn out" href="{{ url_for('donate') }}">Other</a>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <h2 class="t">Recent Gallery</h2>
+      <div class="gal">
+        {% for g in gal %}
+          {{ gitem(g) }}
+        {% else %}
+          <p class="note">Photos and videos will appear here.</p>
+        {% endfor %}
+      </div>
+      <p><a class="btn blue" href="{{ url_for('gallery') }}">Open Gallery ›</a></p>
+    </div>
+  </section>
+  <section style="padding-top:0">
+    <div class="wrap two">
+      {{ contactcard() }}
+      {% if S.map_embed %}
+        <iframe class="map" src="{{ S.map_embed }}" loading="lazy" title="Map"></iframe>
+      {% else %}
+        <iframe class="map"
+                src="https://maps.google.com/maps?q=12.2493382,79.0713247&hl=en&z=16&output=embed"
+                loading="lazy"
+                allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade"
+                title="{{ S.trust_name }} location"></iframe>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+{% block js %}
+  <script>
+      var s = document.querySelectorAll('.slides img'),
+          d = document.querySelectorAll('.dots i'),
+          i = 0;
+      if (s.length > 1) setInterval(function() {
+          s[i].classList.remove('on');
+          d[i].classList.remove('on');
+          i = (i + 1) % s.length;
+          s[i].classList.add('on');
+          d[i].classList.add('on')
+      }, 4500)
+  </script>
+{% endblock %}

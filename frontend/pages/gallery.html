@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{# Photo / video gallery with filters #}
+{% from '_m.html' import head, gitem with context %}
+{% block title %}
+  Gallery – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("Gallery") }}
+  <div class="wrap page">
+    <form method="get" class="two" style="grid-template-columns:repeat(3,1fr)">
+      <select name="kind" onchange="this.form.submit()">
+        <option value="">Photos &amp; Videos</option>
+        <option value="photo" {{'selected' if kind=='photo'}}>Photos</option>
+        <option value="video" {{'selected' if kind=='video'}}>Videos</option>
+      </select>
+      <select name="activity" onchange="this.form.submit()">
+        <option value="">All activities</option>
+        {% for a in acts %}
+          <option {{'selected' if a.title==act}}>{{ a.title }}</option>
+        {% endfor %}
+      </select>
+      <select name="project" onchange="this.form.submit()">
+        <option value="">All projects</option>
+        {% for p in prs %}
+          <option {{'selected' if p.title==pr}}>{{ p.title }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <br>
+    <div class="gal">
+      {% for g in items %}
+        {{ gitem(g) }}
+      {% else %}
+        <p class="note">Nothing here yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

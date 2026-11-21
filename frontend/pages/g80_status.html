@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{# 80G status of one donation #}
+{% from '_m.html' import head with context %}
+{% block title %}
+  80G Certificate Status – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("80G Certificate Status") }}
+  <div class="wrap page">
+    <div class="form card">
+      {% if d.mode=="test" %}
+        <div class="flash err"
+             style="margin:0 0 14px">This was a simulated TEST payment and is not part of 80G reporting.</div>
+      {% endif %}
+      <div class="sum">
+        <div><span>Donor</span><b>{{ d.name }}</b></div>
+        <div><span>Amount</span><b>₹{{ d.amount|inr }}</b></div>
+        {% if c %}
+          <div><span>Receipt No.</span><b>{{ c.number }}</b></div>
+        {% endif %}
+        <div><span>Donation date</span><b>{{(d.paid_at or d.created)[:10]}}</b></div>
+      </div>
+      <h3>80G certificate status: <span class="pill {{ g.status }}">{{ {"review":"Under review","pan_needed":"PAN required","eligible":"Verified eligible","pre_arn":"Pre-ARN obtained","filed":"Form 10BD filed","issued":"Form 10BE issued","na":"Not applicable"}[g.status] }}</span></h3>
+      <p>{{ txt[g.status] }}</p>
+      {% if g.status=="pre_arn" and g.arn %}
+        <p>Pre-ARN: <b>{{ g.arn }}</b></p>
+      {% endif %}
+      {% if g.status in ("filed","issued") and g.filed_on %}
+        <p>Form 10BD filed on: <b>{{ g.filed_on }}</b></p>
+      {% endif %}
+      {% if g.status=="issued" and g.form10be %}
+        <p><a class="btn gold" href="{{ url_for('g80_form',ref=d.ref) }}">⬇ DOWNLOAD FORM 10BE (80G)</a></p>
+      {% endif %}
+      <hr>
+      <p class="note"><b>Your donation receipt is not a Form 10BE.</b> The official Form 10BE is available only after the Trust files Form 10BD and the Income Tax portal processes it. Eligibility does not guarantee a tax deduction; please consult your tax advisor. Trust 80G approval: {{ S.g80_form }}, Reg. No. {{ S.g80_reg }} dated {{ S.g80_date }} ({{ S.g80_validity }}).</p>
+      <p class="btnrow">
+        {% if c %}
+          <a class="btn blue" href="{{ url_for('cert_pdf',num=c.number,dl=1) }}">⬇ Donation receipt (PDF)</a>
+        {% endif %}
+        <a class="btn" href="{{ url_for('g80_info') }}">About 80G</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

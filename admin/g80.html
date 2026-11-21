@@ -1,0 +1,82 @@
+{% extends "admin/a_base.html" %}
+{# 80G tracking table #}
+{% block body %}
+  <h1>80G Tracking</h1>
+  <div class="fs">
+    <p><b>Provisional 80G approval:</b> {{ S.g80_form }} · Reg. No. <b>{{ S.g80_reg }}</b> · {{ S.g80_date }} · {{ S.g80_validity }}</p>
+    <p class="note">Workflow: verify eligibility → (optional) Pre-ARN after the portal acknowledgement → file Form 10BD → portal processes it → download the official Form 10BE from the portal → upload it on the donation page and email it to the donor. Receipts are acknowledgements only; Form 10BE is never generated here. Only live, paid donations are tracked.</p>
+    <p><a class="btn blue" href="{{ url_for('a_g80_csv') }}">⬇ Form 10BD data (CSV)</a> <a class="btn blue" href="{{ url_for('a_g80_xlsx') }}">⬇ Form 10BD data (Excel)</a></p>
+  </div>
+  <div class="kp">
+    {% for k,l in STAT %}
+      {% if k!="na" %}
+        <a href="{{ url_for('a_g80',status=k,fy=fy) }}">
+          <div>
+            <b>{{ counts.get(k,(0,0))[0] }}</b>{{ l }}
+            <br>
+            <small>₹{{ (counts.get(k,(0,0))[1] or 0)|inr}}</small>
+          </div>
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <form method="get" class="filters">
+    <select name="status">
+      <option value="">All statuses</option>
+      {% for k,l in STAT %}
+        <option value="{{ k }}" {{'selected' if k==st}}>{{ l }}</option>
+      {% endfor %}
+    </select><select name="fy">
+      <option value="">All financial years</option>
+      {% for f in fys %}
+        <option {{'selected' if f==fy}}>{{ f }}</option>
+      {% endfor %}
+    </select><button class="btn gold">Filter</button>
+  </form>
+  <div class="tw">
+    <table>
+      <tr>
+        <th>Receipt</th>
+        <th>Donor</th>
+        <th>PAN</th>
+        <th>Amount</th>
+        <th>80G status</th>
+        <th>Pre-ARN / 10BD</th>
+        <th></th>
+      </tr>
+      {% for d in rows %}
+        <tr>
+          <td>
+            {{ d.number or '–' }}
+            <br>
+            <small>{{ d.fy or '' }}</small>
+          </td>
+          <td>{{ d.name }}</td>
+          <td>{{'on file' if d.pan else '<span class="err-t">missing</span>'|safe}}</td>
+          <td>₹{{ d.amount|inr }}</td>
+          <td>
+            {% for k,l in STAT %}
+              {% if k==d.g80 %}
+                {{ l }}
+              {% endif %}
+            {% endfor %}
+            {% if d.form10be %}
+              <br>
+              <small>10BE uploaded</small>
+            {% endif %}
+          </td>
+          <td>
+            <small>{{ d.arn or '' }}
+              <br>
+            {{ d.filed_on or '' }} {{ d.filing_ref or '' }}</small>
+          </td>
+          <td><a class="btn blue" href="{{ url_for('a_donation',id=d.id) }}">Manage</a></td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7">No live paid donations yet.</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+{% endblock %}

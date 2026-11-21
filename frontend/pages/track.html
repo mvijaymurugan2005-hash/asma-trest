@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{# Donor: track a donation by reference / UTR + mobile number #}
+{% from '_m.html' import head with context %}
+{% block title %}
+  Track Donation – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("Track Your Donation") }}
+  <div class="wrap page">
+    <div class="form card">
+      <p>Enter the <b>reference number</b> (or UTR) from your donation and the <b>mobile number</b> you used. You will see where your payment is and can download your certificate once the Trust has verified it.</p>
+      <form method="post" action="{{ url_for('track') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf() }}">
+        <label>Reference number or UTR</label>
+        <input name="ref"
+               value="{{ ref }}"
+               placeholder="e.g. D261116BD69F2"
+               required
+               autocomplete="off">
+        <label>Mobile number</label>
+        <input name="mobile"
+               type="tel"
+               placeholder="10-digit mobile number"
+               required
+               autocomplete="tel">
+        <button class="btn gold" style="margin-top:14px;width:100%">Track donation</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

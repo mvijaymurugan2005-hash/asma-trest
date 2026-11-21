@@ -1,0 +1,330 @@
+{% extends "admin/a_base.html" %}
+{# Admin single donation: verify UPI payment, receipt, 80G #}
+{% block body %}
+  <h1>
+    Donation {{ d.ref }}
+    {% if d.mode=="test" %}
+      <span class="tag">TEST</span>
+    {% endif %}
+  </h1>
+  <p>
+    <a class="btn blue" href="{{ back }}">← All donations</a>
+  </p>
+  <div class="grid2">
+    <div class="fs">
+      <h3>Donor details <small>(confidential)</small></h3>
+      <table class="kv">
+        <tr>
+          <th>Name</th>
+          <td>{{ d.name }}</td>
+        </tr>
+        <tr>
+          <th>Mobile</th>
+          <td>{{ d.mobile }}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>{{ d.email }}</td>
+        </tr>
+        <tr>
+          <th>Address</th>
+          <td style="white-space:pre-wrap">{{ d.address or '–' }}</td>
+        </tr>
+        <tr>
+          <th>PAN</th>
+          <td><b>{{ d.pan or 'Not provided' }}</b></td>
+        </tr>
+        <tr>
+          <th>Message</th>
+          <td>{{ d.message or '–' }}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="fs">
+      <h3>Payment</h3>
+      <table class="kv">
+        <tr>
+          <th>Amount</th>
+          <td>₹{{ d.amount|inr }}</td>
+        </tr>
+        <tr>
+          <th>Status</th>
+          <td>{{ d.status }}</td>
+        </tr>
+        <tr>
+          <th>Mode</th>
+          <td>{{ d.mode or 'live' }}</td>
+        </tr>
+        <tr>
+          <th>Method</th>
+          <td>{{ d.method or '–' }}</td>
+        </tr>
+        <tr>
+          <th>Channel</th>
+          <td>{{'UPI QR (Kotak Mahindra Bank)' if d.channel=='upi_qr' else 'Razorpay / online'}}</td>
+        </tr>
+        {% if d.channel=="upi_qr" %}
+          <tr>
+            <th>UTR submitted</th>
+            <td><b>{{ d.utr or '–' }}</b></td>
+          </tr>
+          <tr>
+            <th>Declared amount</th>
+            <td>₹{{(d.declared_amount or d.amount)|inr}}</td>
+          </tr>
+          <tr>
+            <th>Submitted</th>
+            <td>{{ d.submitted_at or '–' }}</td>
+          </tr>
+          {% if d.verified_by %}
+            <tr>
+              <th>Verified / rejected by</th>
+              <td>{{ d.verified_by }} · {{ d.verified_at }}</td>
+            </tr>
+          {% endif %}
+          {% if d.verify_note %}
+            <tr>
+              <th>Note</th>
+              <td>{{ d.verify_note }}</td>
+            </tr>
+          {% endif %}
+          {% if d.reject_reason %}
+            <tr>
+              <th>Rejection reason</th>
+              <td>{{ d.reject_reason }}</td>
+            </tr>
+          {% endif %}
+        {% endif %}
+        <tr>
+          <th>80G status</th>
+          <td>
+            {% if d.status=="paid" %}
+              {{ g80_label }}
+            {% else %}
+              Not applicable until the payment is verified
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Transaction ID</th>
+          <td>{{ d.payment_id or '–' }}</td>
+        </tr>
+        <tr>
+          <th>Order ID</th>
+          <td>{{ d.order_id or '–' }}</td>
+        </tr>
+        <tr>
+          <th>Created</th>
+          <td>{{ d.created }}</td>
+        </tr>
+        <tr>
+          <th>Paid</th>
+          <td>{{ d.paid_at or '–' }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  {% if d.channel=="upi_qr" %}
+    <div class="fs">
+      <h3>UPI QR payment verification</h3>
+      {% if d.screenshot %}
+        <p>Payment screenshot submitted by the donor: <a href="{{ url_for('a_upi_proof',id=d.id) }}"
+                                                         target="_blank">open full size</a></p>
+        <p>
+          <a href="{{ url_for('a_upi_proof',id=d.id) }}" target="_blank">
+            <img src="{{ url_for('a_upi_proof',id=d.id) }}"
+                 alt="Donor payment screenshot"
+                 style="max-width:260px;
+                        max-height:340px;
+                        border:1px solid var(--line);
+                        border-radius:10px">
+          </a>
+        </p>
+      {% else %}
+        <p class="note">No screenshot was uploaded.</p>
+      {% endif %}
+      {% if d.status=="pending" %}
+        <p class="flash err" style="margin:0 0 10px">PENDING VERIFICATION – a screenshot or UTR is not proof of payment. Confirm that <b>₹{{ d.amount|inr }}</b> with UTR <b>{{ d.utr }}</b> is actually credited in the Kotak Mahindra Bank account (net banking / merchant app / statement) before verifying.</p>
+        <form method="post" action="{{ url_for('a_upi_verify',id=d.id) }}">
+          <input type="hidden" name="_csrf" value="{{ csrf() }}">
+          <input type="hidden" name="back" value="{{ back }}">
+          <label>Amount actually credited in the bank (₹)</label>
+          <input name="received"
+                 type="number"
+                 min="10"
+                 max="500000"
+                 value="{{ fv.get('received') or d.amount }}"
+                 required>
+          <label>Bank credit date</label>
+          <input name="credit_date"
+                 type="date"
+                 value="{{ fv.get('credit_date','') }}"
+                 required>
+          <label>Note (optional)</label>
+          <input name="note"
+                 maxlength="200"
+                 value="{{ fv.get('note','') }}"
+                 placeholder="e.g. matched in statement 05-11-2026">
+          <label class="chk">
+            <input type="checkbox" name="confirm" value="1" style="width:auto" required>
+            I have verified this exact credit and UTR in the Trust's Kotak Mahindra Bank account.
+          </label>
+          <p>
+            <button class="btn gold">✔ Verify payment &amp; issue receipt</button>
+          </p>
+        </form>
+        <form method="post"
+              action="{{ url_for('a_upi_reject',id=d.id) }}"
+              onsubmit="return confirm('Reject this payment? No receipt will be issued.')">
+          <input type="hidden" name="_csrf" value="{{ csrf() }}">
+          <input type="hidden" name="back" value="{{ back }}">
+          <label>Reject – reason (shown to the donor)</label>
+          <input name="reason"
+                 maxlength="200"
+                 required
+                 minlength="5"
+                 placeholder="e.g. No matching credit found for this UTR">
+          <p>
+            <button class="btn" style="background:#c62828;color:#fff">✖ Reject payment</button>
+          </p>
+        </form>
+      {% elif d.status=="paid" %}
+        <p class="ok-t">Verified by {{ d.verified_by or '–' }} on {{ d.verified_at or '–' }}. UTR {{ d.utr }}.</p>
+      {% elif d.status=="rejected" %}
+        <p class="err-t">Rejected by {{ d.verified_by }} on {{ d.verified_at }}: {{ d.reject_reason }}</p>
+      {% else %}
+        <p>Waiting for the donor to submit the UTR.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+  <div class="fs">
+    <h3>Donation history <small>(same mobile, e-mail or PAN)</small></h3>
+    {% if hist %}
+      <div class="tw">
+        <table>
+          <tr>
+            <th>Date</th>
+            <th>Reference</th>
+            <th>Receipt</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+          {% for h in hist %}
+            <tr>
+              <td>{{ h.paid_at or h.created }}</td>
+              <td>
+                <a href="{{ url_for('a_donation',id=h.id,back=back) }}">{{ h.ref }}</a>
+              </td>
+              <td>{{ h.number or '–' }}</td>
+              <td>₹{{ h.amount|inr }}</td>
+              <td>{{ h.status }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    {% else %}
+      <p class="note">No other donations from this donor.</p>
+    {% endif %}
+  </div>
+  <div class="fs">
+    <h3>Receipt</h3>
+    {% if c %}
+      <p>
+        <b>{{ c.number }}</b> · issued {{ c.issued }} · emailed: {{'yes' if c.emailed else 'no'}}
+        {% if c.email_error %}
+          <span class="err-t">({{ c.email_error }})</span>
+        {% endif %}
+        · {{'REVOKED' if c.revoked else 'valid'}}
+      </p>
+      <p>
+        <a class="btn blue" href="{{ url_for('cert_pdf',num=c.number,dl=1) }}">⬇ Download PDF</a> <a class="btn blue"
+                                                                                                     target="_blank"
+                                                                                                     href="{{ url_for('verify',num=c.number) }}">Verify page</a>
+        {% for a,l in [('email','✉ Resend by email'),('regen','Regenerate PDF'),('revoke','Revoke / Restore')] %}
+          <form class="inl"
+                method="post"
+                action="{{ url_for('a_cert_act',id=c.id,act=a) }}">
+            <input type="hidden" name="_csrf" value="{{ csrf() }}">
+            <input type="hidden" name="back" value="{{ here }}">
+            <button class="btn gold">{{ l }}</button>
+          </form>
+        {% endfor %}
+      </p>
+      <form method="post"
+            action="{{ url_for('a_cert_act',id=c.id,act='number') }}"
+            class="row">
+        <input type="hidden" name="_csrf" value="{{ csrf() }}">
+        <input type="hidden" name="back" value="{{ here }}">
+        <label>Change receipt number</label>
+        <input name="number" value="{{ c.number }}" maxlength="40">
+        <button class="btn blue">Save number</button>
+      </form>
+      <p class="note">Letters, digits and hyphens only. The PDF is regenerated; QR codes and links from the old number keep working.</p>
+    {% else %}
+      <p>
+        {% if d.status=="paid" %}
+          Receipt not generated yet.
+        {% else %}
+          A receipt is created only after a verified successful payment.
+        {% endif %}
+      </p>
+    {% endif %}
+  </div>
+  {% if d.status=="paid" %}
+    <div class="fs">
+      <h3>80G status & Form 10BE</h3>
+      <p class="note">Distinguish clearly: the PDF above is only a donation acknowledgement. The statutory <b>Form 10BE</b> must be downloaded from the Income Tax portal after Form 10BD is processed and uploaded here. This site never creates a Form 10BE. Registration {{ S.g80_reg }} · approved {{ S.g80_date }} · {{ S.g80_validity }}.</p>
+      <form method="post"
+            enctype="multipart/form-data"
+            action="{{ url_for('a_g80_save',id=d.id) }}">
+        <input type="hidden" name="_csrf" value="{{ csrf() }}">
+        <input type="hidden" name="back" value="{{ back }}">
+        <label>Status</label>
+        <select name="status">
+          {% for k,l in STAT %}
+            <option value="{{ k }}" {{'selected' if k==fv.get('status', g.status)}}>{{ l }}</option>
+          {% endfor %}
+        </select>
+        <label>Donor PAN (add / correct)</label>
+        <input name="pan"
+               value="{{ fv.get('pan', d.pan) }}"
+               maxlength="10"
+               style="text-transform:uppercase">
+        <label>Pre-ARN / acknowledgement number</label>
+        <input name="arn" value="{{ fv.get('arn', g.arn) }}">
+        <label class="chk">
+          <input type="checkbox" name="confirm" style="width:auto">
+          The Trust has verified this donation's eligibility and obtained the required acknowledgement (needed for Pre-ARN)
+        </label>
+        <label>Form 10BD filing date</label>
+        <input name="filed_on" type="date" value="{{ fv.get('filed_on', g.filed_on) }}">
+        <label>Form 10BD acknowledgement / token number</label>
+        <input name="filing_ref" value="{{ fv.get('filing_ref', g.filing_ref) }}">
+        <label>Internal note</label>
+        <input name="note" value="{{ fv.get('note', g.note) }}">
+        <label>
+          Official Form 10BE (PDF from the Income Tax portal)
+          {% if g.form10be %}
+            – <a href="{{ url_for('a_10be_file',id=d.id) }}" target="_blank">current file</a>
+          {% endif %}
+        </label>
+        <input type="file" name="form10be" accept="application/pdf">
+        <p>
+          <button class="btn gold">Save 80G tracking</button>
+        </p>
+      </form>
+      {% if g.status=="issued" and g.form10be %}
+        <form method="post" action="{{ url_for('a_10be_email',id=d.id) }}">
+          <input type="hidden" name="_csrf" value="{{ csrf() }}">
+          <input type="hidden" name="back" value="{{ back }}">
+          <button class="btn blue">✉ Email Form 10BE to donor</button>
+          <small>
+            {% if g.form10be_emailed %}
+              last sent {{ g.form10be_emailed }}
+            {% endif %}
+          </small> · <a href="{{ url_for('g80_status',ref=d.ref) }}" target="_blank">donor's status page</a>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

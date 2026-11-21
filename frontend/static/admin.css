@@ -1,0 +1,393 @@
+/* ASMA Trust - Admin panel styles (side menu, tables, forms, Website Settings page). */
+body {
+  background: #eef3fb;
+}
+.side {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 230px;
+  background: #072a68;
+  color: #fff;
+  padding: 16px;
+  overflow: auto;
+}
+.side a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #dbe6fa;
+  font-size: 14px;
+}
+.side a:hover {
+  background: #0b3a8c;
+  color: #fff;
+}
+.side h3 {
+  color: #fbbf24;
+  margin: 0 0 12px;
+}
+.main {
+  margin-left: 230px;
+  padding: 24px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+th,
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #e3ebf8;
+  text-align: left;
+  font-size: 14px;
+  vertical-align: top;
+}
+th {
+  background: #0b3a8c;
+  color: #fff;
+}
+.kp {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.kp div {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 5px solid #fbbf24;
+}
+.kp b {
+  font-size: 26px;
+  color: #0b3a8c;
+  display: block;
+}
+.btn {
+  padding: 7px 14px;
+  font-size: 14px;
+}
+.red {
+  background: #c62828;
+  color: #fff;
+}
+.thumb {
+  height: 60px;
+  border-radius: 6px;
+  margin: 3px;
+}
+.fs {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 18px 18px;
+  margin-bottom: 18px;
+}
+.ib {
+  display: inline-block;
+  text-align: center;
+  font-size: 12px;
+}
+.inl {
+  display: inline;
+}
+.lg {
+  max-width: 380px;
+  margin: 12vh auto;
+  background: #fff;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px #0b3a8c33;
+}
+@media (max-width: 800px) {
+  .side {
+    position: static;
+    width: auto;
+  }
+  .main {
+    margin: 0;
+  }
+}
+.main,
+.main h1,
+.main h2,
+.main h3,
+.main label,
+.main p {
+  color: #14213d;
+}
+.kp div {
+  color: #4b5a77;
+}
+.kp b {
+  color: #0b3a8c;
+}
+.main td {
+  color: #14213d;
+}
+.main input,
+.main select,
+.main textarea {
+  color: #14213d;
+  background: #fff;
+}
+
+.tw {
+  overflow-x: auto;
+}
+.tag {
+  background: #fde8e8;
+  color: #a31515;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+.filters input,
+.filters select {
+  width: auto;
+  flex: 1 1 180px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 900px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+table.kv th {
+  width: 130px;
+  background: #eef3fb;
+  color: #0b3a8c;
+}
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.row label {
+  flex: 1 0 100%;
+  margin-bottom: 0;
+}
+.row input {
+  flex: 1 1 260px;
+}
+.chk {
+  font-weight: 400;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.kp a {
+  color: inherit;
+}
+.err-t {
+  color: #a31515;
+}
+
+/* ===== WEBSITE SETTINGS PAGE ===== */
+.sh {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.sh h1 {
+  margin: 0 0 4px;
+}
+.sub {
+  margin: 0;
+  color: #4b5a77 !important;
+}
+.dirty {
+  background: #fff4d6;
+  color: #8a5a00;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.tabs a {
+  background: #fff;
+  color: #0b3a8c;
+  border: 1px solid #d3def3;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.tabs a:hover {
+  background: #e6eefc;
+}
+.tabs a.on {
+  background: #0b3a8c;
+  color: #fff;
+  border-color: #0b3a8c;
+}
+.fs {
+  max-width: 860px;
+  padding: 14px 22px 22px;
+}
+.fs h3 {
+  margin: 6px 0 10px;
+  font-size: 20px;
+}
+.pane[hidden] {
+  display: none;
+}
+.fld {
+  margin-bottom: 6px;
+}
+.fld label {
+  margin: 14px 0 5px;
+}
+.hint {
+  display: block;
+  color: #5d6b86;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.main textarea {
+  resize: vertical;
+  overflow: hidden;
+}
+.main input:focus,
+.main textarea:focus {
+  outline: 2px solid #0b3a8c55;
+  border-color: #0b3a8c;
+}
+.imgbox {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #f5f8fe;
+  border: 1px dashed #b9cae8;
+  border-radius: 12px;
+  padding: 12px;
+}
+.imgprev {
+  width: 190px;
+  height: 110px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #d3def3;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex: none;
+}
+.imgprev img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.noimg {
+  color: #5d6b86;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.4;
+}
+.imgbox.gone .imgprev {
+  background: #fde8e8;
+  border-color: #f1b5b5;
+}
+.imgstate {
+  display: block;
+  font-weight: 600;
+  color: #14213d;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.imgbtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn.sm {
+  padding: 7px 14px;
+  font-size: 14px;
+  margin: 0;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.btn.ghost {
+  background: #fff;
+  color: #0b3a8c;
+  border: 1px solid #b9cae8;
+}
+label.btn {
+  display: inline-block;
+  width: auto;
+  cursor: pointer;
+}
+.file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.savebar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 860px;
+  background: #ffffffee;
+  backdrop-filter: blur(6px);
+  padding: 12px 16px;
+  border: 1px solid #d3def3;
+  border-radius: 14px;
+  box-shadow: 0 -4px 18px #0b3a8c18;
+}
+.savebar .btn {
+  padding: 9px 20px;
+}
+@media (max-width: 700px) {
+  .imgprev {
+    width: 100%;
+  }
+  .imgbox {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+.main [hidden] {
+  display: none !important;
+}
+.main label.btn.blue {
+  color: #fff;
+}
+.main .btn.red {
+  color: #fff;
+}
+.main .btn.ghost {
+  color: #0b3a8c;
+}
+.main .btn.gold {
+  color: #0a1a3d;
+}

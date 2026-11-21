@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{# About Us page: history, vision, mission, objectives, founder, trustees, registration #}
+{% from '_m.html' import head with context %}
+{% block title %}
+  About Us – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("About Us") }}
+  <div class="wrap page">
+    <h2 class="t">About the Trust</h2>
+    <p class="pre">{{ S.about_text }}</p>
+    <h2 class="t">Trust History</h2>
+    <p class="pre">{{ S.history }}</p>
+    <div class="vm">
+      <div class="card">
+        <h3>Vision</h3>
+        <p class="pre">{{ S.vision }}</p>
+      </div>
+      <div class="card">
+        <h3>Mission</h3>
+        <p class="pre">{{ S.mission }}</p>
+      </div>
+    </div>
+    <h2 class="t" style="margin-top:30px">Objectives</h2>
+    <p class="pre">{{ S.objectives }}</p>
+    <h2 class="t">Founder / Chairman</h2>
+    <p><b>{{ S.chairman_name }}</b></p>
+    <p class="pre">{{ S.chairman_message }}</p>
+    <h2 class="t">Trustees and Members</h2>
+    <div class="grid">
+      {% for t in trustees %}
+        <div class="card tcard">
+          {% if t.photo %}
+            <img src="/media/{{ t.photo }}" alt="{{ t.name }}">
+          {% else %}
+            <div class="big">👤</div>
+          {% endif %}
+          <h4>{{ t.name }}</h4>
+          <b>{{ t.role }}</b>
+          <p class="pre">{{ t.bio }}</p>
+        </div>
+      {% else %}
+        <p class="note">[Trustees and members – to be added from Admin]</p>
+      {% endfor %}
+    </div>
+    <h2 class="t" style="margin-top:30px">Registration Details</h2>
+    <p class="pre">{{ S.registration }}</p>
+  </div>
+{% endblock %}

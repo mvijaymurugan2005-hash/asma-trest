@@ -1,0 +1,55 @@
+{% extends "admin/a_base.html" %}
+{# Receipts and numbering #}
+{% block body %}
+  <h1>Donation Receipts</h1>
+  <p class="note">Every receipt is created automatically after a verified payment. Change numbers or see full details from the donation page.</p>
+  <div class="tw">
+    <table>
+      <tr>
+        <th>Receipt No.</th>
+        <th>Donor</th>
+        <th>Amount</th>
+        <th>Issued</th>
+        <th>Emailed</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+      {% for c in rows %}
+        <tr>
+          <td>
+            {{ c.number }}
+            {% if c.dmode=="test" %}
+              <span class="tag">TEST</span>
+            {% endif %}
+          </td>
+          <td>
+            {{ c.name }}
+            <br>
+            <small>{{ c.email }}</small>
+          </td>
+          <td>₹{{ c.amount|inr }}</td>
+          <td>{{ c.issued }}</td>
+          <td>{{'yes' if c.emailed else 'no'}}</td>
+          <td>{{'REVOKED' if c.revoked else 'valid'}}</td>
+          <td>
+            <a class="btn blue" href="{{ url_for('a_donation',id=c.did) }}">Details</a> <a class="btn blue" href="{{ url_for('cert_pdf',num=c.number,dl=1) }}">Download</a> <a class="btn blue"
+                                                                                                                                                                               href="{{ url_for('verify',num=c.number) }}"
+                                                                                                                                                                               target="_blank">Verify</a>
+            {% for a,l in [('regen','Regenerate'),('email','Resend email'),('revoke','Revoke/Restore')] %}
+              <form class="inl"
+                    method="post"
+                    action="{{ url_for('a_cert_act',id=c.id,act=a) }}">
+                <input type="hidden" name="_csrf" value="{{ csrf() }}">
+                <button class="btn gold">{{ l }}</button>
+              </form>
+            {% endfor %}
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7">No receipts yet.</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+{% endblock %}

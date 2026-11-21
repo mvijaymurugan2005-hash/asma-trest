@@ -1,0 +1,82 @@
+{% extends "admin/a_base.html" %}
+{# Admin add / edit form (built automatically from the field list in app.py) #}
+{% block body %}
+  <h1>{{'Edit' if row else 'Add'}} – {{ cfg.label }}</h1>
+  <form method="post"
+        enctype="multipart/form-data"
+        class="fs"
+        style="max-width:760px">
+    <input type="hidden" name="_csrf" value="{{ csrf() }}">
+    {% for c,l,t,o in fields %}
+      {% set v = row[c] if row else '' %}
+      {% if t=="check" %}
+        <label>
+          <input type="checkbox"
+                 name="{{ c }}"
+                 value="1"
+                 style="width:auto"
+                 {{'checked' if (v if row else 1)}}> {{ l }}
+        </label>
+      {% else %}
+        <label>{{ l }}</label>
+        {% if t=="textarea" %}
+          <textarea name="{{c}}">{{v}}</textarea>
+        {% elif t=="select" %}
+          <select name="{{ c }}">
+            {% for x in o %}
+              <option {{'selected' if x==v}}>{{ x }}</option>
+            {% endfor %}
+          </select>
+        {% elif t=="combo" %}
+          <input name="{{ c }}"
+                 value="{{ v }}"
+                 list="dl_{{ c }}"
+                 autocomplete="off"
+                 placeholder="Type a project name (optional)">
+          <datalist id="dl_{{ c }}">
+            {% for x in o if x %}
+              <option value="{{ x }}">
+            {% endfor %}
+          </datalist>
+        {% elif t=="number" %}
+          <input type="number" name="{{ c }}" value="{{ v or 0 }}">
+        {% elif t=="date" %}
+          <input type="date" name="{{ c }}" value="{{ v }}">
+        {% elif t=="text" %}
+          <input name="{{ c }}" value="{{ v }}">
+        {% elif t=="images" %}
+          {% for f in (v|jl) %}
+            <span class="ib">
+              <img class="thumb" src="/media/{{ f }}">
+              <br>
+              <input type="checkbox" name="rm_{{ c }}" value="{{ f }}" style="width:auto">
+            remove</span>
+          {% endfor %}
+          <input type="file" name="{{ c }}" accept="image/*" multiple>
+        {% else %}
+          {% if v %}
+            <div>
+              {% if t=="image" or (t=="media" and row.kind=="photo") %}
+                <img class="thumb" src="/media/{{ v }}">
+              {% else %}
+                <a href="/media/{{ v }}" target="_blank">Current file</a>
+              {% endif %}
+              <label style="display:inline">
+                <input type="checkbox" name="rm_{{ c }}" style="width:auto">
+                remove
+              </label>
+              – or replace:
+            </div>
+          {% endif %}
+          <input type="file"
+                 name="{{ c }}"
+                 accept="{{'image/*' if t=='image' else 'video/*' if t=='video' else 'image/*,video/*'}}">
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    <p>
+      <button class="btn gold">Save</button>
+      <a class="btn blue" href="{{ url_for('a_list',name=name) }}">Cancel</a>
+    </p>
+  </form>
+{% endblock %}

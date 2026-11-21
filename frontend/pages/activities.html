@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{# Our Activities page #}
+{% from '_m.html' import head, acard with context %}
+{% block title %}
+  Our Activities – {{ S.trust_name }}
+{% endblock %}
+{% block body %}
+  {{ head("Our Activities") }}
+  <div class="wrap page">
+    <div class="grid">
+      {% for a in acts %}
+        {{ acard(a) }}
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
