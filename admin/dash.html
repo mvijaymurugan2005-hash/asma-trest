@@ -9,7 +9,9 @@
     <div><b>{{ st.paid }}</b>Paid donations</div>
     <div><b>₹{{ st.total|inr }}</b>Total received</div>
     <div><b>{{ st.certs }}</b>Certificates</div>
-    <div><a href="{{ url_for('a_donations',status='pending') }}"><b>{{ st.pending }}</b>UPI awaiting verification</a></div>
+    {% if st.pending %}
+      <div><a href="{{ url_for('a_donations',status='pending') }}"><b>{{ st.pending }}</b>UPI awaiting verification</a></div>
+    {% endif %}
     <div><b>{{ st.msgs }}</b>Unread messages</div>
   </div>
   <h3>Recent donations</h3>

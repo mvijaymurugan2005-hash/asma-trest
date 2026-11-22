@@ -3,7 +3,7 @@ import os, sys, sqlite3, tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 TMP = tempfile.mkdtemp(prefix="asma-email-test-")
-os.environ.update(DATA_DIR=TMP, SECRET_KEY="t", BASE_URL="http://localhost:5000", ADMIN_PASSWORD="x", PAYMENT_MODE="razorpay",
+os.environ.update(DATA_DIR=TMP, DATABASE_URL="", SECRET_KEY="t", BASE_URL="http://localhost:5000", ADMIN_PASSWORD="x", PAYMENT_MODE="razorpay",
                   SMTP_HOST="smtp.gmail.com", SMTP_USER="asmafoundation2025@gmail.com", SMTP_PASS="")
 os.makedirs(os.path.join(TMP, "database"), exist_ok=True)
 NEW, OLD = "asmafoundation2025@gmail.com", "chezhiyaninnovativeservicesprivatelimited@gmail.com"

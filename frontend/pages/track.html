@@ -8,7 +8,7 @@
   {{ head("Track Your Donation") }}
   <div class="wrap page">
     <div class="form card">
-      <p>Enter the <b>reference number</b> (or UTR) from your donation and the <b>mobile number</b> you used. You will see where your payment is and can download your certificate once the Trust has verified it.</p>
+      <p>Enter the <b>reference number</b> from your donation and the <b>mobile number</b> you used. You will see your payment status and can download your donation certificate as soon as payment is completed.</p>
       <form method="post" action="{{ url_for('track') }}">
         <input type="hidden" name="_csrf" value="{{ csrf() }}">
         <label>Reference number or UTR</label>

@@ -107,9 +107,12 @@
     input.addEventListener('input', function () { touched[field] = true; check(field); });
     input.addEventListener('blur', function () { touched[field] = true; check(field); });
   }
-  ['name', 'email', 'address', 'pan', 'amount'].forEach(live);
-  form.elements.amount.addEventListener('input', function () { if (touched.pan) check('pan'); }); // PAN rule depends on the amount
-  form.elements.pan.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
+  ['name', 'email', 'address', 'amount'].forEach(live);
+  if (form.elements.pan) {
+    live('pan');
+    form.elements.amount.addEventListener('input', function () { if (touched.pan) check('pan'); }); // PAN rule depends on the amount
+    form.elements.pan.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
+  }
 
   /* ---------- "Did you mean ...?" : click the message to fix the e-mail ---------- */
   $('msg_email').addEventListener('click', function () {
@@ -161,7 +164,9 @@
 
     /* validate everything; show every error; jump to the first wrong field */
     var firstBad = '';
-    ['name', 'mobile', 'email', 'address', 'pan', 'amount'].forEach(function (f) {
+    var fields = ['name', 'mobile', 'email', 'address', 'amount'];
+    if (form.elements.pan) fields.splice(4, 0, 'pan');
+    fields.forEach(function (f) {
       touched[f] = true;
       if (check(f) && !firstBad) firstBad = f;
     });

@@ -9,6 +9,7 @@ sys.path.insert(0, ROOT)
 TMP = tempfile.mkdtemp(prefix="asma-admin-test-")
 os.environ.update(
     DATA_DIR=TMP,
+    DATABASE_URL="",
     SECRET_KEY="test-secret",
     BASE_URL="http://localhost:5000",
     ADMIN_USER="admin",

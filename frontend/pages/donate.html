@@ -31,22 +31,6 @@
                     style="min-height:80px" required></textarea>
           <div class="fmsg" id="msg_address" aria-live="polite"></div>
 
-          <label for="pan">
-            PAN number
-            {% if pan_from %}
-              <small>(required for donations of ₹{{ pan_from|inr }} or more)</small>
-            {% else %}
-              <small>(optional)</small>
-            {% endif %}
-          </label>
-          <input id="pan" name="pan" maxlength="10" placeholder="ABCDE1234F"
-                 autocomplete="off" style="text-transform:uppercase">
-          <div class="fmsg" id="msg_pan" aria-live="polite"></div>
-          <p class="note pannote">
-            PAN is needed if you wish to be considered for 80G reporting.
-            It is kept confidential and shown only in masked form on your receipt.
-          </p>
-
           <label for="amount">Donation amount (₹) <small>(minimum ₹99)</small></label>
           <input id="amount" name="amount" type="number" min="99" max="500000" step="1"
                  inputmode="numeric" value="{{ amount }}" required>
@@ -57,28 +41,19 @@
 
           <p id="m" class="err-t"></p>
 
-          {% if ONLINE %}
-            <button class="btn gold" id="bo" style="width:100%;margin-top:10px">
-              Donate securely – Card / UPI / Net Banking ♥
-            </button>
-            <p class="note pannote">
-              Payments are processed securely by Razorpay. Your donation certificate / receipt is generated
-              automatically as soon as the payment is confirmed, and you can download it right away.
-            </p>
-          {% else %}
-            <button class="btn gold" id="bo" disabled style="width:100%;margin-top:10px">
-              Online donation is not available right now
-            </button>
-            <p class="note">
-              Online payments are being set up. Please contact the Trust to donate.
-            </p>
-          {% endif %}
+          <button class="btn gold" id="bo" style="width:100%;margin-top:10px">
+            Donate Now
+          </button>
+          <p class="note pannote">
+            Payments are processed securely by Razorpay (Card / UPI / Net Banking). Once your payment is
+            completed, your donation certificate is generated automatically and ready to download immediately.
+          </p>
         </form>
       </div>
 
       {# shown after an online payment while the receipt is being prepared #}
       <div id="wait" class="flash ok" hidden style="margin-top:12px">
-        ✅ Payment received – preparing your certificate…
+        ✅ Payment completed – preparing your certificate for download…
       </div>
     </div>
   </div>

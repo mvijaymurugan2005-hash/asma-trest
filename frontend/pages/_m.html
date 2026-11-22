@@ -46,9 +46,10 @@
     </div>
   </div>
 {% endmacro %}
-{# 4-step donation tracker: Submitted -> Under verification -> Verified -> Certificate ready #}
+{# 4-step donation tracker: automated for Razorpay, bank-verified for legacy UPI QR #}
 {% macro tracker(d, c) %}
   {% set st = d.status %}
+  {% set upi = d.channel == 'upi_qr' %}
   {% set s1 = 'done' if st in ('pending','paid','rejected') else 'now' %}
   {% set s2 = 'now' if st=='pending' else ('done' if st in ('paid','rejected') else 'todo') %}
   {% set s3 = 'done' if st=='paid' else ('bad' if st=='rejected' else 'todo') %}
@@ -56,17 +57,17 @@
   <ol class="trk" aria-label="Donation status tracker">
     <li class="{{ s1 }}">
       <span class="dot">{{ '✓' if s1=='done' else '1' }}</span>
-      <b>Payment submitted</b>
-      <small>{{ (d.submitted_at or d.created or '')[:16] if s1=='done' else 'Submit your UTR' }}</small>
+      <b>{{ 'Payment submitted' if upi else 'Payment initiated' }}</b>
+      <small>{{ (d.submitted_at or d.created or '')[:16] if s1=='done' else ('Submit your UTR' if upi else 'Razorpay checkout') }}</small>
     </li>
     <li class="{{ s2 }}">
       <span class="dot">{{ '✓' if s2=='done' else '2' }}</span>
-      <b>Trust is verifying</b>
+      <b>{{ 'Trust is verifying' if upi else 'Razorpay verified' }}</b>
       <small>
         {% if s2=='now' %}
           In progress…
         {% elif s2=='done' %}
-          Checked with bank
+          {{ 'Checked with bank' if upi else 'Verified automatically' }}
         {% else %}
           Waiting
         {% endif %}
@@ -74,7 +75,7 @@
     </li>
     <li class="{{ s3 }}">
       <span class="dot">{{ '✓' if s3=='done' else ('!' if s3=='bad' else '3') }}</span>
-      <b>{{ 'Not verified' if s3=='bad' else 'Payment verified' }}</b>
+      <b>{{ 'Not verified' if s3=='bad' else ('Payment verified' if upi else 'Payment completed') }}</b>
       <small>{{ (d.verified_at or d.paid_at or '')[:16] if s3!='todo' else 'Waiting' }}</small>
     </li>
     <li class="{{ s4 }}">

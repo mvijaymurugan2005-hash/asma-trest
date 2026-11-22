@@ -518,19 +518,25 @@ def api_donate():
     if err:
         return jsonify(ok=False, error=err), 400
 
-    mode = "live"  # real money. UPI QR payments are verified by the admin; online payments by Razorpay itself
+    mode = "live"  # real money. Online payments are verified automatically by Razorpay
     # Every new donation goes through Razorpay. The old manual UPI QR flow has been removed.
     if not online_enabled():
-        return jsonify(ok=False, error="Online donations are not available right now. Please try again later or contact the Trust."), 503
+        return jsonify(
+            ok=False,
+            error="Razorpay is not configured yet. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env and restart the server.",
+        ), 503
     channel = "razorpay"
 
     ref = datetime.now().strftime("D%y%m%d") + secrets.token_hex(3).upper()
-    try:  # ask Razorpay for an order; the amount is in paise (Rs. x 100)
-        order_id = rzp("orders", {"amount": amt * 100, "currency": "INR", "receipt": ref})["id"]
+    try:  # ask Razorpay for an order with auto-capture enabled; the amount is in paise (Rs. x 100)
+        order_id = rzp(
+            "orders",
+            {"amount": amt * 100, "currency": "INR", "receipt": ref, "payment_capture": 1},
+        )["id"]
     except Exception as e:
         print("Razorpay order failed:", e)
         return (
-            jsonify(ok=False, error="Online payment is not available right now. Please try again in a few minutes."),
+            jsonify(ok=False, error="Could not start Razorpay payment. Please check your Razorpay API keys or try again."),
             502,
         )
     ex(
@@ -574,9 +580,10 @@ def api_status(ref):
 
 def mark_paid(did, pid, method=""):
     """Atomic and repeatable: verify + webhook can both call it, but only one receipt is ever created."""
+    ts = now()
     db().execute(
-        "update donations set status='paid', payment_id=?, method=?, paid_at=? where id=? and status!='paid'",
-        (pid, method or "", now(), did),
+        "update donations set status='paid', payment_id=?, method=?, paid_at=?, verified_by=?, verified_at=? where id=? and status!='paid'",
+        (pid, method or "", ts, "Razorpay (Auto)", ts, did),
     )
     db().commit()
     try:
@@ -615,6 +622,17 @@ def api_verify():
         if p.get("order_id") != don["order_id"] or p.get("amount") != don["amount"] * 100:
             return jsonify(ok=False), 400
         method, state = p.get("method") or "", p.get("status") or "captured"
+        if state == "authorized":
+            # Auto-capture immediately so the donor gets their certificate right away without waiting
+            try:
+                cap = rzp(
+                    "payments/" + pid + "/capture",
+                    {"amount": don["amount"] * 100, "currency": "INR"},
+                )
+                if cap and cap.get("status") == "captured":
+                    state = "captured"
+            except Exception as e:
+                print("Razorpay auto-capture failed:", e)
     if state != "captured":
         return jsonify(
             ok=True, url=ok_url

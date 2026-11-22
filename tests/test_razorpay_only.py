@@ -7,7 +7,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 TMP = tempfile.mkdtemp(prefix="asma-test-")
 os.environ.update(
-    DATA_DIR=TMP, SECRET_KEY="test-secret", BASE_URL="http://localhost:5000", ADMIN_USER="admin",
+    DATA_DIR=TMP, DATABASE_URL="", SECRET_KEY="test-secret", BASE_URL="http://localhost:5000", ADMIN_USER="admin",
     ADMIN_PASSWORD="TestAdminPass123", PAYMENT_MODE="razorpay", RAZORPAY_KEY_ID="rzp_test_x",
     RAZORPAY_KEY_SECRET="sekret", RAZORPAY_WEBHOOK_SECRET="whsec", SMTP_HOST="", SMTP_USER="", SMTP_PASS="",
 )
@@ -55,7 +55,7 @@ page = cl.get("/donate").get_data(as_text=True)
 js = open(os.path.join(ROOT, "frontend/static/donate.js"), encoding="utf-8").read()
 for bad in ("kotak", "upi-qr", "UTR", "screenshot", "I HAVE COMPLETED PAYMENT", "Copy UPI ID", "Download QR", 'id="upi"'):
     check("page has no '%s'" % bad, bad.lower() not in page.lower())
-check("Razorpay donate button present", 'id="bo"' in page and "Donate securely" in page)
+check("Razorpay donate button present", 'id="bo"' in page and "Donate Now" in page and "not available right now" not in page)
 check("donate.js has no UPI/UTR code", not re.search(r"utr|upi/submit|showUpi|screenshot", js, re.I))
 check("QR image file deleted from static", not os.path.exists(os.path.join(ROOT, "frontend/static/img/kotak-upi-qr.png")))
 
@@ -88,6 +88,11 @@ r = cl2.post("/api/verify", json={"ref": ref2, "razorpay_payment_id": "pay_OK", 
 d = dbrow("select * from donations where ref=?", (ref2,))
 check("valid signature + matching captured payment -> paid", r.status_code == 200 and d["status"] == "paid" and d["payment_id"] == "pay_OK")
 n1 = dbrow("select count(*) c from certificates where donation_id=?", (d["id"],))["c"]
+receipt_html = cl2.get("/receipt/" + ref2).get_data(as_text=True)
+check("receipt immediately shows PAYMENT COMPLETED + Download button (no admin verify)", "PAYMENT COMPLETED!" in receipt_html and "DOWNLOAD DONATION CERTIFICATE" in receipt_html and "Verified automatically" in receipt_html)
+cert_num = dbrow("select number from certificates where donation_id=?", (d["id"],))["number"]
+dl_resp = cl2.get("/certificate/%s.pdf?dl=1" % cert_num)
+check("donor can immediately download certificate PDF", dl_resp.status_code == 200 and dl_resp.data[:4] == b"%PDF")
 r = cl2.post("/api/verify", json={"ref": ref2, "razorpay_payment_id": "pay_OK", "razorpay_signature": sig}, headers={"X-CSRF": tok2})
 check("repeat verify -> still exactly one receipt", n1 == 1 and dbrow("select count(*) c from certificates where donation_id=?", (d["id"],))["c"] == 1)
 
@@ -126,8 +131,8 @@ print("\n[6] Razorpay not configured")
 os.environ["RAZORPAY_KEY_ID"] = ""
 cl9, tok9 = client()
 r = cl9.post("/api/donate", json=BODY, headers={"X-CSRF": tok9})
-check("no keys -> clear 'not available' error, nothing saved", r.status_code == 503 and "not available" in r.get_json()["error"])
-check("donate page shows disabled button", "not available right now" in cl9.get("/donate").get_data(as_text=True))
+check("no keys -> clear 'not configured' error, nothing saved", r.status_code == 503 and "not configured" in r.get_json()["error"])
+check("donate page still shows Donate Now button (never 'not available')", "Donate Now" in cl9.get("/donate").get_data(as_text=True) and "not available right now" not in cl9.get("/donate").get_data(as_text=True))
 
 print("\nRESULT: %d passed, %d failed" % (PASS, FAIL))
 sys.exit(1 if FAIL else 0)

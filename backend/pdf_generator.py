@@ -247,10 +247,13 @@ def make_pdf(num, don):
         paid_on = datetime.strptime(paid_on, "%Y-%m-%d").strftime("%d-%m-%Y")
     except ValueError:
         pass
+    pan_lbl, pan_val = (
+        ("Donor PAN", mask_pan(don["pan"])) if don["pan"] else ("Donor Mobile", don["mobile"] or "-")
+    )
     rows = [
         ("Receipt No.", num, "Donation Date", paid_on),
-        ("Payment Mode", method_label(don), "UTR / Transaction ID", don["payment_id"] or "-"),
-        ("Donor PAN", mask_pan(don["pan"]) or "Not provided", "Reference No.", don["ref"]),
+        ("Payment Mode", method_label(don), "Transaction ID", don["payment_id"] or "-"),
+        (pan_lbl, pan_val, "Reference No.", don["ref"]),
     ]
     cw = [96, 168, 100, 156]
     x0 = (W - sum(cw)) / 2

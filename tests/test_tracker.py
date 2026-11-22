@@ -6,7 +6,7 @@ import os, sys, re, sqlite3, tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 TMP = tempfile.mkdtemp(prefix="asma-track-test-")
-os.environ.update(DATA_DIR=TMP, SECRET_KEY="test-secret", BASE_URL="http://localhost:5000",
+os.environ.update(DATA_DIR=TMP, DATABASE_URL="", SECRET_KEY="test-secret", BASE_URL="http://localhost:5000",
                   ADMIN_USER="admin", ADMIN_PASSWORD="TestAdminPass123", PAYMENT_MODE="razorpay")
 os.makedirs(os.path.join(TMP, "database"), exist_ok=True)
 from backend.app import app
