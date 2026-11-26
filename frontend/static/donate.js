@@ -127,6 +127,37 @@
     form.elements.pan.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
   }
 
+  /* Full name: allow ONLY letters/text (and spaces, dot, apostrophe, hyphen) – block numbers & symbols */
+  form.elements.name.addEventListener('input', function () {
+    var cleaned = this.value.replace(/[^\p{L}\p{M} .'-]/gu, '');
+    if (cleaned !== this.value) this.value = cleaned;
+  });
+
+  /* Donation amount: minimum Rs. 99 – can increase, never decrease below 99 */
+  var amtInput = form.elements.amount;
+  amtInput.addEventListener('keydown', function (e) {
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E' || e.key === '.') {
+      e.preventDefault();
+    }
+    if (e.key === 'ArrowDown' && (parseInt(this.value, 10) || 0) <= 99) {
+      e.preventDefault();
+      this.value = '99';
+    }
+  });
+  amtInput.addEventListener('input', function () {
+    var digits = this.value.replace(/\D/g, '');
+    if (digits !== this.value) this.value = digits;
+  });
+  function clampAmount() {
+    var n = parseInt(amtInput.value, 10);
+    if (!n || n < 99) amtInput.value = '99';
+    else if (n > 500000) amtInput.value = '500000';
+    else amtInput.value = String(n);
+    clearField('amount');
+  }
+  amtInput.addEventListener('blur', clampAmount);
+  amtInput.addEventListener('change', clampAmount);
+
   /* ---------- "Did you mean ...?" : click the message to fix the e-mail ---------- */
   $('msg_email').addEventListener('click', function () {
     var m = this.textContent.match(/Did you mean (\S+) \?/);

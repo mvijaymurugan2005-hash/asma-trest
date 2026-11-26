@@ -300,10 +300,14 @@ def gallery():
 
 @app.route("/donate")
 def donate():
+    try:
+        amt = max(99, min(500000, int(request.args.get("amount", "99"))))
+    except ValueError:
+        amt = 99
     resp = make_response(
         render_template(
             "donate.html",
-            amount=request.args.get("amount", "1000"),
+            amount=str(amt),
             test=False,
             pan_from=int(E("PAN_MANDATORY_FROM", "0") or 0),
         )
@@ -504,6 +508,8 @@ def api_donate():
     pan_from = int(E("PAN_MANDATORY_FROM", "0") or 0)
     if not 2 <= len(name) <= 80:
         err = "Please enter your full name."
+    elif any(ch.isdigit() for ch in name):
+        err = "Name can contain only letters (no numbers)."
     elif not mob:
         err = "Enter a valid mobile number for the selected country."
     elif len(email) > 120 or not re.fullmatch(EMAIL_RE, email):
