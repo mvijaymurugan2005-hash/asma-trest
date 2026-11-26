@@ -20,7 +20,11 @@
       <option value="razorpay" {{'selected' if ch=='razorpay'}}>Razorpay / online</option>
     </select><button class="btn gold">Filter</button>
   </form>
-  <p><a class="btn blue" href="{{ url_for('a_csv') }}">⬇ CSV</a> <a class="btn blue" href="{{ url_for('a_xlsx') }}">⬇ Excel</a> <a class="btn gold" href="{{ url_for('a_g80') }}">80G tracking</a></p>
+  <div class="act-row" style="margin:0 0 14px;flex-wrap:wrap">
+    <a class="btn blue" href="{{ url_for('a_csv') }}">⬇ CSV</a>
+    <a class="btn blue" href="{{ url_for('a_xlsx') }}">⬇ Excel</a>
+    <a class="btn gold" href="{{ url_for('a_g80') }}">80G tracking</a>
+  </div>
   <div class="tw">
     <table>
       <tr>
@@ -73,11 +77,13 @@
           </td>
           <td>{{ {'review':'Review','pan_needed':'PAN needed','eligible':'Eligible','pre_arn':'Pre-ARN','filed':'10BD filed','issued':'10BE issued','na':'N/A'}.get(d.g80,'–') if d.status=='paid' else '–' }}</td>
           <td>
-            <a class="btn {{'gold' if d.status=='pending' else 'blue'}}"
-               href="{{ url_for('a_donation',id=d.id,back=back) }}">{{'Verify' if d.status=='pending' else 'Details'}}</a>
-            {% if d.number %}
-              <a class="btn blue" href="{{ url_for('cert_pdf',num=d.number,dl=1) }}">PDF</a>
-            {% endif %}
+            <div class="act-row">
+              <a class="btn {{'gold' if d.status=='pending' else 'blue'}}"
+                 href="{{ url_for('a_donation',id=d.id,back=back) }}">{{'Verify' if d.status=='pending' else 'Details'}}</a>
+              {% if d.number %}
+                <a class="btn blue" href="{{ url_for('cert_pdf',num=d.number,dl=1) }}">PDF</a>
+              {% endif %}
+            </div>
           </td>
         </tr>
       {% else %}

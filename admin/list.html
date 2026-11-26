@@ -18,13 +18,15 @@
           <td>{{ r[c] }}</td>
         {% endfor %}
         <td>
-          <a class="btn blue" href="{{ url_for('a_form',name=name,id=r.id) }}">Edit</a>
-          <form class="inl"
-                method="post"
-                action="{{ url_for('a_delete',name=name,id=r.id) }}"
-                onsubmit="return confirm('Delete permanently?')">
-            <input type="hidden" name="_csrf" value="{{ csrf() }}"><button class="btn red">Delete</button>
-          </form>
+          <div class="act-row">
+            <a class="btn blue" href="{{ url_for('a_form',name=name,id=r.id) }}">Edit</a>
+            <form class="inl"
+                  method="post"
+                  action="{{ url_for('a_delete',name=name,id=r.id) }}"
+                  onsubmit="return confirm('Delete permanently?')">
+              <input type="hidden" name="_csrf" value="{{ csrf() }}"><button class="btn red">Delete</button>
+            </form>
+          </div>
         </td>
       </tr>
     {% else %}

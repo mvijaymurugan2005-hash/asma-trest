@@ -21,15 +21,17 @@
         </td>
         <td class="pre">{{ m.message }}</td>
         <td>
-          {% for a,l in [('seen','Read/Unread'),('delete','Delete')] %}
-            <form class="inl"
-                  method="post"
-                  action="{{ url_for('a_msg_act',id=m.id,act=a) }}">
-              <input type="hidden"
-                     name="_csrf"
-                     value="{{ csrf() }}"><button class="btn {{'red' if a=='delete' else 'blue'}}">{{ l }}</button>
-            </form>
-          {% endfor %}
+          <div class="act-row">
+            {% for a,l in [('seen','Read/Unread'),('delete','Delete')] %}
+              <form class="inl"
+                    method="post"
+                    action="{{ url_for('a_msg_act',id=m.id,act=a) }}">
+                <input type="hidden"
+                       name="_csrf"
+                       value="{{ csrf() }}"><button class="btn {{'red' if a=='delete' else 'blue'}}">{{ l }}</button>
+              </form>
+            {% endfor %}
+          </div>
         </td>
       </tr>
     {% else %}
