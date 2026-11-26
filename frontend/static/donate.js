@@ -133,20 +133,44 @@
     if (cleaned !== this.value) this.value = cleaned;
   });
 
-  /* Donation amount: minimum Rs. 99 – can increase, never decrease below 99 */
+  /* Donation amount: minimum Rs. 99 – can increase, never decrease or backspace below 99 */
   var amtInput = form.elements.amount;
   amtInput.addEventListener('keydown', function (e) {
     if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E' || e.key === '.') {
       e.preventDefault();
+      return;
     }
     if (e.key === 'ArrowDown' && (parseInt(this.value, 10) || 0) <= 99) {
       e.preventDefault();
       this.value = '99';
+      return;
+    }
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      var v = this.value;
+      var s = this.selectionStart, end = this.selectionEnd;
+      var nextVal;
+      if (s == null || end == null) {
+        nextVal = v.slice(0, -1);
+      } else if (s !== end) {
+        nextVal = v.slice(0, s) + v.slice(end);
+      } else if (e.key === 'Backspace') {
+        nextVal = s > 0 ? v.slice(0, s - 1) + v.slice(s) : v;
+      } else {
+        nextVal = v.slice(0, s) + v.slice(s + 1);
+      }
+      var nextNum = parseInt(nextVal, 10) || 0;
+      if (nextNum < 99) {
+        e.preventDefault();
+        this.value = '99';
+      }
     }
   });
-  amtInput.addEventListener('input', function () {
+  amtInput.addEventListener('input', function (e) {
     var digits = this.value.replace(/\D/g, '');
     if (digits !== this.value) this.value = digits;
+    if (e.inputType && e.inputType.indexOf('delete') === 0) {
+      if ((parseInt(this.value, 10) || 0) < 99) this.value = '99';
+    }
   });
   function clampAmount() {
     var n = parseInt(amtInput.value, 10);
