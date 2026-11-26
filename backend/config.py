@@ -1,7 +1,10 @@
 """Configuration, paths and constants."""
 
 import os, secrets
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+IST = timezone(timedelta(hours=5, minutes=30))
+ist_now = lambda: datetime.now(IST)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _p = os.path.join(ROOT, ".env")
@@ -191,17 +194,19 @@ SETTING_GROUPS = [
         ],
     ),
 ]
-now = lambda: datetime.now().strftime("%Y-%m-%d %H:%M")
+now = lambda: ist_now().strftime("%Y-%m-%d %H:%M")
 
 
 def online_enabled():
     """Instant online payment (Razorpay) is offered ONLY when PAYMENT_MODE=razorpay and both Razorpay keys are in .env."""
     return (
-        pay_mode() == "razorpay" and bool(E("RAZORPAY_KEY_ID")) and bool(E("RAZORPAY_KEY_SECRET"))
+        pay_mode() == "razorpay"
+        and bool(E("RAZORPAY_KEY_ID").strip())
+        and bool(E("RAZORPAY_KEY_SECRET").strip())
     )
 
 
-pay_mode = lambda: "razorpay" if E("PAYMENT_MODE", "razorpay") == "razorpay" else "test"
+pay_mode = lambda: "razorpay" if (E("PAYMENT_MODE", "razorpay").strip().lower() or "razorpay") == "razorpay" else "test"
 
 # ---------- 80G workflow ----------
 G80_STATUS = [
@@ -218,7 +223,7 @@ PAN_RE = r"[A-Z]{5}[0-9]{4}[A-Z]"
 
 
 def fy_label(dt=None):
-    dt = dt or datetime.now()
+    dt = dt or ist_now()
     y = dt.year if dt.month >= 4 else dt.year - 1
     return "%d-%02d" % (y, (y + 1) % 100)
 

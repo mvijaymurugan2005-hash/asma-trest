@@ -175,11 +175,14 @@ def _hdr(r):
 
 
 def _css_ver():
-    # changes whenever style.css is edited, so browsers never show an old cached stylesheet
-    try:
-        return int(os.path.getmtime(os.path.join(app.static_folder, "style.css")))
-    except OSError:
-        return 0
+    # changes whenever static CSS/JS files are edited, so browsers never show an old cached copy
+    mt = 0
+    for fn in ("style.css", "admin.css", "donate.js"):
+        try:
+            mt = max(mt, int(os.path.getmtime(os.path.join(app.static_folder, fn))))
+        except OSError:
+            pass
+    return mt
 
 
 @app.context_processor
@@ -193,7 +196,7 @@ def _ctx():
     return dict(
         S=settings(),
         CSS_V=_css_ver(),
-        year=datetime.now().year,
+        year=ist_now().year,
         CATS=CATS,
         PAY=pay_mode(),
         ONLINE=online_enabled(),
@@ -521,13 +524,20 @@ def api_donate():
     mode = "live"  # real money. Online payments are verified automatically by Razorpay
     # Every new donation goes through Razorpay. The old manual UPI QR flow has been removed.
     if not online_enabled():
+        missing = []
+        if pay_mode() != "razorpay":
+            missing.append("PAYMENT_MODE=razorpay")
+        if not E("RAZORPAY_KEY_ID").strip():
+            missing.append("RAZORPAY_KEY_ID")
+        if not E("RAZORPAY_KEY_SECRET").strip():
+            missing.append("RAZORPAY_KEY_SECRET")
         return jsonify(
             ok=False,
-            error="Razorpay is not configured yet. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env and restart the server.",
+            error="Razorpay is not configured yet (check %s in Environment / .env and redeploy)." % ", ".join(missing),
         ), 503
     channel = "razorpay"
 
-    ref = datetime.now().strftime("D%y%m%d") + secrets.token_hex(3).upper()
+    ref = ist_now().strftime("D%y%m%d") + secrets.token_hex(3).upper()
     try:  # ask Razorpay for an order with auto-capture enabled; the amount is in paise (Rs. x 100)
         order_id = rzp(
             "orders",
@@ -549,7 +559,7 @@ def api_donate():
         ref=ref,
         amount=amt,
         order_id=order_id,
-        key=E("RAZORPAY_KEY_ID"),
+        key=E("RAZORPAY_KEY_ID").strip(),
         name=name,
         email=email,
         mobile=mob,
@@ -1072,7 +1082,7 @@ def a_upi_verify(id):
         err = "Tick the confirmation that you checked this credit in the Kotak Mahindra Bank account / merchant app."
     elif not 10 <= got <= 500000:
         err = "Enter the amount actually credited to the bank account (10 to 500000 rupees)."
-    elif not dt or dt.date() > datetime.now().date():
+    elif not dt or dt.date() > ist_now().date():
         err = "Enter the bank credit date (it cannot be in the future)."
     else:
         err = ""
@@ -1492,7 +1502,7 @@ def _report(fmt):
             ]
             for d in rows
         ],
-        "donations-" + datetime.now().strftime("%Y%m%d"),
+        "donations-" + ist_now().strftime("%Y%m%d"),
         fmt,
     )
 
@@ -1541,7 +1551,7 @@ def _g80_data(fmt):
             ]
             for d in rows
         ],
-        "form10bd-data-" + datetime.now().strftime("%Y%m%d"),
+        "form10bd-data-" + ist_now().strftime("%Y%m%d"),
         fmt,
     )
 
@@ -1614,5 +1624,5 @@ def a_backup():
         buf,
         mimetype="application/zip",
         as_attachment=True,
-        download_name="asma-backup-%s.zip" % datetime.now().strftime("%Y%m%d-%H%M"),
+        download_name="asma-backup-%s.zip" % ist_now().strftime("%Y%m%d-%H%M"),
     )

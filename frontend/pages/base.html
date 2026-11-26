@@ -51,7 +51,7 @@
             <a href="{{ url_for(ep) }}"
                class="{{'on' if request.endpoint==ep or (ep=='projects' and request.endpoint=='project')}}">{{ l }}</a>
           {% endfor %}
-          <a href="{{ url_for('login') }}" class="adm">🔒 Admin Login</a>
+          <a href="{{ url_for('login') }}" class="adm">🔒 Login</a>
         </nav>
       </div>
     </header>

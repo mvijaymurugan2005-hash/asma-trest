@@ -6,7 +6,7 @@ from .config import E
 
 def rzp(path, payload):
     auth = base64.b64encode(
-        ("%s:%s" % (E("RAZORPAY_KEY_ID"), E("RAZORPAY_KEY_SECRET"))).encode()
+        ("%s:%s" % (E("RAZORPAY_KEY_ID").strip(), E("RAZORPAY_KEY_SECRET").strip())).encode()
     ).decode()
     req = urllib.request.Request(
         "https://api.razorpay.com/v1/" + path,
@@ -18,7 +18,7 @@ def rzp(path, payload):
 
 def valid_payment(order_id, payment_id, signature):
     sig = hmac.new(
-        E("RAZORPAY_KEY_SECRET").encode(),
+        E("RAZORPAY_KEY_SECRET").strip().encode(),
         ("%s|%s" % (order_id, payment_id)).encode(),
         hashlib.sha256,
     ).hexdigest()
@@ -26,7 +26,7 @@ def valid_payment(order_id, payment_id, signature):
 
 
 def valid_webhook(body, signature):
-    sec = E("RAZORPAY_WEBHOOK_SECRET")
+    sec = E("RAZORPAY_WEBHOOK_SECRET").strip()
     return bool(sec) and hmac.compare_digest(
         hmac.new(sec.encode(), body, hashlib.sha256).hexdigest(), signature or ""
     )
@@ -34,7 +34,7 @@ def valid_webhook(body, signature):
 
 def rzp_get(path):
     auth = base64.b64encode(
-        ("%s:%s" % (E("RAZORPAY_KEY_ID"), E("RAZORPAY_KEY_SECRET"))).encode()
+        ("%s:%s" % (E("RAZORPAY_KEY_ID").strip(), E("RAZORPAY_KEY_SECRET").strip())).encode()
     ).decode()
     req = urllib.request.Request(
         "https://api.razorpay.com/v1/" + path, headers={"Authorization": "Basic " + auth}

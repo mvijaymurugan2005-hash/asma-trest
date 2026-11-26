@@ -379,6 +379,8 @@ label.btn {
 .main [hidden] {
   display: none !important;
 }
+.main .btn.blue,
+.main a.btn.blue,
 .main label.btn.blue {
   color: #fff;
 }
@@ -390,4 +392,25 @@ label.btn {
 }
 .main .btn.gold {
   color: #0a1a3d;
+}
+.act-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+  gap: 6px;
+  min-width: 310px;
+}
+.act-grid .inl {
+  display: contents;
+}
+.act-grid .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: 8px;
 }

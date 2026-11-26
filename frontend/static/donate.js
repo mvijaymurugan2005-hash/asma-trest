@@ -100,17 +100,30 @@
     return show(field, rules[field](input.value), field === 'email' ? 'Email looks good' : '');
   }
 
-  /* A message is shown only after the donor has started typing in that field (or pressed Continue) */
+  /* Clear error state on a field while the user is typing */
+  function clearField(field) {
+    var input = field === 'mobile' ? $('mobile') : form.elements[field];
+    var box = $('msg_' + field);
+    if (!input || !box) return;
+    input.classList.remove('bad', 'good');
+    box.className = 'fmsg';
+    box.textContent = '';
+    input.setAttribute('aria-invalid', 'false');
+  }
+
+  /* Do NOT show red errors while typing; clear any previous error as the user edits.
+     Full validation runs cleanly when the donor clicks "Donate Now". */
   var touched = {};
   function live(field) {
     var input = field === 'mobile' ? $('mobile') : form.elements[field];
-    input.addEventListener('input', function () { touched[field] = true; check(field); });
-    input.addEventListener('blur', function () { touched[field] = true; check(field); });
+    input.addEventListener('input', function () {
+      clearField(field);
+      formMsg.textContent = '';
+    });
   }
   ['name', 'email', 'address', 'amount'].forEach(live);
   if (form.elements.pan) {
     live('pan');
-    form.elements.amount.addEventListener('input', function () { if (touched.pan) check('pan'); }); // PAN rule depends on the amount
     form.elements.pan.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
   }
 
@@ -152,7 +165,7 @@
     }
     return show('mobile', err, 'Valid number: ' + iti.getNumber());
   }
-  mobileInput.addEventListener('countrychange', function () { if (touched.mobile) checkMobile(); });
+  mobileInput.addEventListener('countrychange', function () { clearField('mobile'); });
   live('mobile');
 
   /* =====================================================================
